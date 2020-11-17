@@ -79,6 +79,14 @@ type
      function count: integer;
    end;
 
+   ikubo_rest_client_array_<t: class> = interface
+     ['{85E303DD-F8CB-49BC-8424-DEF6C1F5AEA5}']
+     procedure setitems(const value: tarray<t>);
+     function getitems: tarray<t>;
+
+     property items: tarray<t> read getitems write setitems;
+   end;
+
 implementation
 
 end.

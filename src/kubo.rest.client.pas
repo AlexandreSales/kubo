@@ -14,7 +14,7 @@ uses
   rest.types,
   rest.json,
   kubo.rest.client.interfaces,
-  kubo.rest.client.types, kubo.rest.client.utils;
+  kubo.rest.client.types, kubo.rest.client.utils, kubo.rest.client.arrays;
 
 type
 
@@ -60,6 +60,7 @@ implementation
 { tkubo_rest_client<t> }
 
 uses
+  kubo.json.objects,
   kubo.rest.client.request,
   kubo.rest.client.authenticatoin,
   kubo.rest.client.params;
@@ -294,11 +295,27 @@ end;
 function tkubo_rest_client<t>.get(var alist: tobjectlist<t>): ikubo_rest_client<t>;
 var
   lstr_response: string;
+  lkubo_array_: ikubo_rest_client_array_<t>;
 begin
+  result := self;
+
   lstr_response := self.get;
   if lstr_response.trim <> '' then
   begin
-    alist := rest.json.tjson.jsontoobject<tobjectlist<t>>(lstr_response, [joDateFormatISO8601, joIgnoreEmptyStrings, joIgnoreEmptyArrays])
+    lstr_response :=  '{' +
+                      '    "items":' + lstr_response +
+                      '}';
+
+    lkubo_array_ := tkubo_rest_client_array_<t>.create;
+    tkubo_rest_client_array_<t>(lkubo_array_).assignfromjson(lstr_response);
+
+    if alist = nil then
+      alist := tobjectlist<t>.create
+    else
+      alist.clear;
+
+    for var iint_count_ := low(lkubo_array_.items) to high(lkubo_array_.items) do
+      alist.add(lkubo_array_.items[iint_count_]);
   end
   else
     alist := nil;
