@@ -10,11 +10,14 @@ uses
   system.json,
   system.netencoding,
   system.generics.collections,
+  fmx.dialogs,
   rest.client,
   rest.types,
   rest.json,
   kubo.rest.client.interfaces,
-  kubo.rest.client.types, kubo.rest.client.utils, kubo.rest.client.arrays;
+  kubo.rest.client.types,
+  kubo.rest.client.utils,
+  kubo.rest.client.json;
 
 type
 
@@ -32,7 +35,7 @@ type
 
     frest_request_json_body_itens: tjsonobject;
 
-    procedure doprepare;
+    function doprepare: boolean;
     function dorequest(const prest_eequest_method: trestrequestmethod): string;
   public
     {public declarations}
@@ -47,8 +50,8 @@ type
     function params: ikubo_rest_client_params<t>;
 
     function get: string; overload;
-    function get(var alist: tobjectlist<t>): ikubo_rest_client<t>; overload;
-    function get(var obj: t): ikubo_rest_client<t>; overload;
+    function get(var akubo_object_array: ikubo_rest_client_json_object_array<t>): ikubo_rest_client<t>; overload;
+    function get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>; overload;
 
     function post(const content: string): string;
     function put(const content: string): string;
@@ -119,16 +122,18 @@ begin
   inherited;
 end;
 
-procedure tkubo_rest_client<t>.doprepare;
+function tkubo_rest_client<t>.doprepare: boolean;
 var
   lint_count_: integer;
 begin
-  try
+  result := false;
 
+  try
     case fauthentication.types of
     taBasic: params.add('Authorization', '', 'Basic ' +  tnetencoding.base64.encode(fauthentication.login + ':' + fauthentication.password), kpkHTTPHeader);
     taBearer: params.add('Authorization', '', 'Bearer ' + fauthentication.token, kpkHTTPHeader);
     end;
+
 
     for lint_count_ := 0 to params.count - 1 do
       case params.items(lint_count_).kind of
@@ -219,11 +224,16 @@ begin
             freeandnil(li_str_strem_body);
         end;
       end;
+
+    result := true;
   finally
+
   end;
 end;
 
 function tkubo_rest_client<t>.dorequest(const prest_eequest_method: trestrequestmethod): string;
+var
+  lint_count_: integer;
 begin
   result := '';
   frest_client_ := nil;
@@ -247,22 +257,23 @@ begin
       frest_request_.method := prest_eequest_method;
       frest_request_.resource := frequest.resource;
 
-      doprepare;
+      if doprepare then
+      begin
+        try
+          frest_request_.execute;
+        except
+          on e: exception do
+          begin
+            if pos('HTTP/1.1 500', e.message) > 0 then
+              result := frest_response_.jsontext
+            else
+              raise;
+          end
+        end;
 
-      try
-        frest_request_.execute;
-      except
-        on e: exception do
-        begin
-          if pos('HTTP/1.1 500', e.message) > 0 then
-            result := frest_response_.jsontext
-          else
-            raise;
-        end
+        if result.trim = '' then
+          result := frest_response_.jsontext;
       end;
-
-      if result.trim = '' then
-        result := frest_response_.jsontext;
     except
       on E: Exception do
         raise;
@@ -281,44 +292,35 @@ begin
   end;
 end;
 
-function tkubo_rest_client<t>.get(var obj: t): ikubo_rest_client<t>;
+function tkubo_rest_client<t>.get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>;
 var
   lstr_response: string;
-begin
-  lstr_response := self.get;
-  if lstr_response.trim <> '' then
-    obj := rest.json.tjson.jsontoobject<t>(lstr_response, [joDateFormatISO8601, joIgnoreEmptyStrings, joIgnoreEmptyArrays])
-  else
-    obj := nil;
-end;
-
-function tkubo_rest_client<t>.get(var alist: tobjectlist<t>): ikubo_rest_client<t>;
-var
-  lstr_response: string;
-  lkubo_array_: ikubo_rest_client_array_<t>;
 begin
   result := self;
-
   lstr_response := self.get;
   if lstr_response.trim <> '' then
   begin
-    lstr_response :=  '{' +
-                      '    "items":' + lstr_response +
-                      '}';
+    if akubo_object = nil then
+      akubo_object := tkubo_rest_client_json_object<t>.create;
 
-    lkubo_array_ := tkubo_rest_client_array_<t>.create;
-    tkubo_rest_client_array_<t>(lkubo_array_).assignfromjson(lstr_response);
+    akubo_object.asjson := lstr_response;
+  end;
+end;
 
-    if alist = nil then
-      alist := tobjectlist<t>.create
-    else
-      alist.clear;
+function tkubo_rest_client<T>.get(var akubo_object_array: ikubo_rest_client_json_object_array<T>): ikubo_rest_client<t>;
+var
+  lstr_response: string;
+begin
+  Result := Self;
 
-    for var iint_count_ := low(lkubo_array_.items) to high(lkubo_array_.items) do
-      alist.add(lkubo_array_.items[iint_count_]);
-  end
-  else
-    alist := nil;
+  lstr_response := Self.get;
+  if lstr_response.trim <> '' then
+  begin
+    if akubo_object_array = nil then
+      akubo_object_array := tkubo_rest_client_json_object_array<t>.create;
+
+    akubo_object_array.asjson := lstr_response;
+  end;
 end;
 
 function tkubo_rest_client<t>.get: string;

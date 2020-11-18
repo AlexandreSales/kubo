@@ -10,6 +10,8 @@ type
   ikubo_rest_client_request<t: class> = interface;
   ikubo_rest_client_authentication<t: class> = interface;
   ikubo_rest_client_params<t: class> = interface;
+  ikubo_rest_client_json_object_array<t: class> = interface;
+  ikubo_rest_client_json_object<t: class> = interface;
 
   ikubo_rest_client<t: class> = interface
     ['{D0E551E3-1CEC-4614-A77A-8EAD07A04A8A}']
@@ -19,8 +21,8 @@ type
     function params: ikubo_rest_client_params<t>;
 
     function get: string; overload;
-    function get(var alist: tobjectlist<t>): ikubo_rest_client<t>; overload;
-    function get(var obj: t): ikubo_rest_client<t>; overload;
+    function get(var akubo_object_array: ikubo_rest_client_json_object_array<t>): ikubo_rest_client<t>; overload;
+    function get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>; overload;
 
     function post(const content: string): string;
     function put(const content: string): string;
@@ -79,13 +81,25 @@ type
      function count: integer;
    end;
 
-   ikubo_rest_client_array_<t: class> = interface
-     ['{85E303DD-F8CB-49BC-8424-DEF6C1F5AEA5}']
-     procedure setitems(const value: tarray<t>);
-     function getitems: tarray<t>;
+   ikubo_rest_client_json_object<t: class> = interface
+     ['{686DF6FA-2A5A-4FB4-B367-7AD50AA3B71D}']
+     function GetValue: T;
+     function GetAsJson: String;
+     procedure SetAsJson(aValue: String);
+     property AsJson: String read GetAsJson write SetAsJson;
 
-     property items: tarray<t> read getitems write setitems;
+     property value: T read GetValue;
    end;
+
+   ikubo_rest_client_json_object_array<t: class> = Interface
+    ['{2837FF80-EC33-48E7-8E81-AFFF61E7F6A0}']
+    function GetAsJson: String;
+    function GetItems: TObjectList<T>;
+    procedure SetAsJson(aValue: String);
+
+    property AsJson: String read GetAsJson write SetAsJson;
+    property Items: TObjectList<T> read GetItems;
+  end;
 
 implementation
 
