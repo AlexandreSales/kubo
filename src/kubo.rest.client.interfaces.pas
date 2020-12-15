@@ -24,9 +24,9 @@ type
     function get(var akubo_object_array: ikubo_rest_client_json_object_array<t>): ikubo_rest_client<t>; overload;
     function get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>; overload;
 
-    function post(const content: string): string;
-    function put(const content: string): string;
-    function delete: string;
+    function post: ikubo_rest_client<t>;
+    function put: ikubo_rest_client<t>;
+    function delete: boolean;
   end;
 
   ikubo_rest_client_authentication<t: class> = interface

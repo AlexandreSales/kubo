@@ -53,9 +53,9 @@ type
     function get(var akubo_object_array: ikubo_rest_client_json_object_array<t>): ikubo_rest_client<t>; overload;
     function get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>; overload;
 
-    function post(const content: string): string;
-    function put(const content: string): string;
-    function delete: string;
+    function post: ikubo_rest_client<t>; overload;
+    function put: ikubo_rest_client<t>; overload;
+    function delete: boolean;
   end;
 
 implementation
@@ -103,9 +103,10 @@ begin
   frest_response_:= nil;
 end;
 
-function tkubo_rest_client<t>.delete: string;
+function tkubo_rest_client<t>.delete: boolean;
 begin
-
+  result := true;
+  self.dorequest(trestrequestmethod.rmput);
 end;
 
 destructor tkubo_rest_client<t>.destroy;
@@ -119,14 +120,19 @@ begin
   if frest_client_ <> nil then
     freeandnil(frest_client_);
 
+  if frest_request_json_body_itens <> nil then
+    freeandnil(frest_request_json_body_itens);
+
   inherited;
 end;
 
 function tkubo_rest_client<t>.doprepare: boolean;
 var
   lint_count_: integer;
+  li_str_strem_body: tstringstream;
 begin
   result := false;
+  li_str_strem_body := nil;
 
   try
     case fauthentication.types of
@@ -203,20 +209,29 @@ begin
                 freeandnil(li_rest_request_json_body_iten);
             end;
 
-          {se a variavel "li_rest_request_json_body_iten" for difernete de nil quer diser que o valor passado
-          no parametro era um json string assim deve adicionar o json item direto, se não adiciona o valor}
+          if params.items(lint_count_).name.trim <> '' then
+          begin
+            {se a variavel "li_rest_request_json_body_iten" for difernete de nil quer diser que o valor passado
+            no parametro era um json string assim deve adicionar o json item direto, se não adiciona o valor}
             if li_rest_request_json_body_iten  <> nil then
               frest_request_json_body_itens.addpair(params.items(lint_count_).name, li_rest_request_json_body_iten)
             else
               frest_request_json_body_itens.addpair(params.items(lint_count_).name, params.items(lint_count_).value);
 
-          {cria o body data para adicionar o valor no bory request}
-            var li_str_strem_body := tstringstream.create(
+            {cria o body data para adicionar o valor no bory request}
+             li_str_strem_body := tstringstream.create(
                                             stringreplace(unquoted(frest_request_json_body_itens.tojson), '\', '', [rfReplaceAll]),
                                             tencoding.utf8);
+          end
+          else
+            {cria o body data para adicionar o valor no bory request}
+            li_str_strem_body := tstringstream.create(
+                                            stringreplace(unquoted(li_rest_request_json_body_iten.tojson), '\', '', [rfReplaceAll]),
+                                            tencoding.utf8);
 
-            if li_rest_request_json_body_iten <> nil then
-              freeandnil(li_rest_request_json_body_iten);
+
+          if li_rest_request_json_body_iten <> nil then
+            freeandnil(li_rest_request_json_body_iten);
 
           {adiconar o bodydata no bory request}
             frest_request_.clearbody;
@@ -338,14 +353,16 @@ begin
   result := fparams;
 end;
 
-function tkubo_rest_client<t>.post(const content: string): string;
+function tkubo_rest_client<t>.post: ikubo_rest_client<t>;
 begin
-
+  result := self;
+  self.dorequest(trestrequestmethod.rmpost);
 end;
 
-function tkubo_rest_client<t>.put(const content: string): string;
+function tkubo_rest_client<t>.put: ikubo_rest_client<t>;
 begin
-
+  result := self;
+  self.dorequest(trestrequestmethod.rmput);
 end;
 
 function tkubo_rest_client<t>.request: ikubo_rest_client_request<t>;
