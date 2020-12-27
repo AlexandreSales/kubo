@@ -10,65 +10,65 @@ uses
 
 type
 
-  tkubo_rest_client_param = class(tinterfacedobject, ikubo_rest_client_param)
+  tkuboParam = class(tinterfacedobject, ikuboParam)
   private
     {private declarations}
     fname: string;
     fresource: string;
     fvalue: variant;
-    fkind: tkupo_rest_client_param_kind;
+    fkind: tkuboParamKind;
 
     function getname: string;
     procedure setname(const Value: string);
     function getvalue: variant;
     procedure setvalue(const Value: variant);
-    function getkind: tkupo_rest_client_param_kind;
-    procedure setkind(const Value: tkupo_rest_client_param_kind);
+    function getkind: tkuboParamKind;
+    procedure setkind(const Value: tkuboParamKind);
     function getresource: string;
     procedure setresource(const Value: string);
   public
     {public delcarations}
-    constructor create(const pname, presource: string; const pvalue: variant; const pkind: tkupo_rest_client_param_kind);
+    constructor create(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind);
     destructor destroy; override;
 
-    class function new(const pname, presource: string; const pvalue: variant; const pkind: tkupo_rest_client_param_kind): ikubo_rest_client_param;
+    class function new(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind): ikuboParam;
 
     property name: string read getname write setname;
     property resource: string read getresource write setresource;
     property value: variant read getvalue write setvalue;
-    property kind: tkupo_rest_client_param_kind read getkind write setkind;
+    property kind: tkuboParamKind read getkind write setkind;
   end;
 
 
-  tkubo_rest_client_params<t: class> = class(tinterfacedobject, ikubo_rest_client_params<t>)
+  tkuboParams<t: class> = class(tinterfacedobject, ikuboParams<t>)
   private
     {private declarations}
     [weak]
-    fparent: ikubo_rest_client<t>;
-    flist: TList<ikubo_rest_client_param>;
+    fparent: ikuboRestClient<t>;
+    flist: TList<ikuboParam>;
   public
     {public declarations}
-    constructor create(pparent: ikubo_rest_client<t>);
+    constructor create(pparent: ikuboRestClient<t>);
     destructor destroy; override;
 
-    class function new(pparent: ikubo_rest_client<t>): ikubo_rest_client_params<t>;
+    class function new(pparent: ikuboRestClient<t>): ikuboParams<t>;
 
-    function add(const pname, presource: string; const pvalue: variant; const pkind: tkupo_rest_client_param_kind): ikubo_rest_client_params<t>;
-    function items(const pindex: integer): ikubo_rest_client_param;
+    function add(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind): ikuboParams<t>;
+    function items(const pindex: integer): ikuboParam;
     function count: integer;
 
-    function &end: ikubo_rest_client<t>;
+    function &end: ikuboRestClient<t>;
   end;
 
 implementation
 
-{ tkubo_rest_client_params<t> }
+{ tkuboParams<t> }
 
-function tkubo_rest_client_params<t>.add(const pname, presource: string; const pvalue: variant; const pkind: tkupo_rest_client_param_kind): ikubo_rest_client_params<t>;
+function tkuboParams<t>.add(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind): ikuboParams<t>;
 begin
   result := self;
   flist.add(
-            tkubo_rest_client_param.new(
+            tkuboParam.new(
                                         pname,
                                         presource,
                                         pvalue,
@@ -77,18 +77,18 @@ begin
            );
 end;
 
-function tkubo_rest_client_params<t>.count: integer;
+function tkuboParams<t>.count: integer;
 begin
   result := flist.count;
 end;
 
-constructor tkubo_rest_client_params<t>.create(pparent: ikubo_rest_client<t>);
+constructor tkuboParams<t>.create(pparent: ikuboRestClient<t>);
 begin
   fparent := pparent;
-  flist := tlist<ikubo_rest_client_param>.create;
+  flist := tlist<ikuboParam>.create;
 end;
 
-destructor tkubo_rest_client_params<t>.destroy;
+destructor tkuboParams<t>.destroy;
 begin
   if flist <> nil then
     freeandnil(flist);
@@ -96,25 +96,25 @@ begin
   inherited;
 end;
 
-function tkubo_rest_client_params<t>.&end: ikubo_rest_client<t>;
+function tkuboParams<t>.&end: ikuboRestClient<t>;
 begin
   result := fparent;
 end;
 
-function tkubo_rest_client_params<t>.items(const pindex: integer): ikubo_rest_client_param;
+function tkuboParams<t>.items(const pindex: integer): ikuboParam;
 begin
   if (pindex >= 0) and (pindex < flist.count) then
     result := flist[pindex];
 end;
 
-class function tkubo_rest_client_params<t>.new(pparent: ikubo_rest_client<t>): ikubo_rest_client_params<t>;
+class function tkuboParams<t>.new(pparent: ikuboRestClient<t>): ikuboParams<t>;
 begin
   result := self.create(pparent);
 end;
 
-{ tkubo_rest_client_param }
+{ tkuboParam }
 
-constructor tkubo_rest_client_param.create(const pname, presource: string; const pvalue: variant; const pkind: tkupo_rest_client_param_kind);
+constructor tkuboParam.create(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind);
 begin
   fname := pname;
   fresource := presource;
@@ -122,7 +122,7 @@ begin
   fkind := pkind;
 end;
 
-destructor tkubo_rest_client_param.destroy;
+destructor tkuboParam.destroy;
 begin
   fname := '';
   fresource := '';
@@ -131,47 +131,47 @@ begin
   inherited;
 end;
 
-function tkubo_rest_client_param.getkind: tkupo_rest_client_param_kind;
+function tkuboParam.getkind: tkuboParamKind;
 begin
   result := fkind;
 end;
 
-function tkubo_rest_client_param.getname: string;
+function tkuboParam.getname: string;
 begin
   result := fname;
 end;
 
-function tkubo_rest_client_param.getresource: string;
+function tkuboParam.getresource: string;
 begin
   result := fresource;
 end;
 
-function tkubo_rest_client_param.getvalue: variant;
+function tkuboParam.getvalue: variant;
 begin
   result := fvalue;
 end;
 
-class function tkubo_rest_client_param.new(const pname, presource: string; const pvalue: variant; const pkind: tkupo_rest_client_param_kind): ikubo_rest_client_param;
+class function tkuboParam.new(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind): ikuboParam;
 begin
   result := self.create(pname, presource, pvalue, pkind);
 end;
 
-procedure tkubo_rest_client_param.setkind(const Value: tkupo_rest_client_param_kind);
+procedure tkuboParam.setkind(const Value: tkuboParamKind);
 begin
   fkind := value;
 end;
 
-procedure tkubo_rest_client_param.setname(const Value: string);
+procedure tkuboParam.setname(const Value: string);
 begin
   fname := value;
 end;
 
-procedure tkubo_rest_client_param.setresource(const Value: string);
+procedure tkuboParam.setresource(const Value: string);
 begin
   fresource := value;
 end;
 
-procedure tkubo_rest_client_param.setvalue(const Value: variant);
+procedure tkuboParam.setvalue(const Value: variant);
 begin
   fvalue := value;
 end;

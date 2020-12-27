@@ -15,7 +15,7 @@ uses
 
 type
 
-  Tkubo_rest_client_json_object_array<T: Class> = Class(TInterfacedObject, ikubo_rest_client_json_object_array<T>)
+  TkuboJsonArray<T: Class> = Class(TInterfacedObject, ikuboJsonArray<T>)
   private
     {private declarations}
     FOptions: TJsonOptions;
@@ -40,7 +40,7 @@ type
     property Items: TObjectList<T> read GetItems;
   end;
 
-  Tkubo_rest_client_json_object<T: Class, Constructor> = Class(TInterfacedObject, ikubo_rest_client_json_object<T>)
+  TkuboJsonObject<T: Class, Constructor> = Class(TInterfacedObject, ikuboJsonObject<T>)
   private
     {private delcarations}
     FOptions: TJsonOptions;
@@ -66,23 +66,23 @@ implementation
 
 { Tkubo_rest_client_json_array<T> }
 
-constructor Tkubo_rest_client_json_object_array<T>.create;
+constructor TkuboJsonArray<T>.create;
 begin
   foptions := [jodateisutc, jodateformatiso8601];
 end;
 
-destructor Tkubo_rest_client_json_object_array<T>.destroy;
+destructor TkuboJsonArray<T>.destroy;
 begin
   getitems.free;
   inherited;
 end;
 
-function Tkubo_rest_client_json_object_array<T>.getasjson: string;
+function TkuboJsonArray<T>.getasjson: string;
 begin
   result := rest.json.tjson.objecttojsonstring(self, foptions);
 end;
 
-function Tkubo_rest_client_json_object_array<T>.getitems: tobjectlist<T>;
+function TkuboJsonArray<T>.getitems: tobjectlist<T>;
 begin
   if not assigned(fitems) then
   begin
@@ -93,7 +93,7 @@ begin
   result := fitems;
 end;
 
-procedure Tkubo_rest_client_json_object_array<T>.setasjson(aValue: string);
+procedure TkuboJsonArray<T>.setasjson(aValue: string);
 var
   JsonValue: TJSONValue;
   JsonObject: TJSONObject;
@@ -132,30 +132,30 @@ begin
   end;
 end;
 
-{ Tkubo_rest_client_json_object<T> }
+{ TkuboJsonObject<T> }
 
-constructor Tkubo_rest_client_json_object<T>.Create;
+constructor TkuboJsonObject<T>.Create;
 begin
   foptions := [jodateisutc, jodateformatiso8601];
 end;
 
-destructor Tkubo_rest_client_json_object<T>.Destroy;
+destructor TkuboJsonObject<T>.Destroy;
 begin
   GetValue.Free;
   inherited;
 end;
 
-function Tkubo_rest_client_json_object<T>.GetAsJson: String;
+function TkuboJsonObject<T>.GetAsJson: String;
 begin
   result := Rest.Json.TJson.ObjectToJsonString(Self, FOptions);
 end;
 
-function Tkubo_rest_client_json_object<T>.GetValue: T;
+function TkuboJsonObject<T>.GetValue: T;
 begin
   Result := FValue;
 end;
 
-procedure Tkubo_rest_client_json_object<T>.SetAsJson(aValue: String);
+procedure TkuboJsonObject<T>.SetAsJson(aValue: String);
 var
   JsonValue: TJSONValue;
   JsonObject: TJSONObject;

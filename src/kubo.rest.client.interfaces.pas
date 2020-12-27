@@ -7,81 +7,81 @@ uses
   kubo.rest.client.types;
 
 type
-  ikubo_rest_client_request<t: class> = interface;
-  ikubo_rest_client_authentication<t: class> = interface;
-  ikubo_rest_client_params<t: class> = interface;
-  ikubo_rest_client_json_object_array<t: class> = interface;
-  ikubo_rest_client_json_object<t: class> = interface;
+  ikuboRequest<t: class> = interface;
+  ikuboAuthentication<t: class> = interface;
+  ikuboParams<t: class> = interface;
+  ikuboJsonArray<t: class> = interface;
+  ikuboJsonObject<t: class> = interface;
 
-  ikubo_rest_client<t: class> = interface
+  ikuboRestClient<t: class> = interface
     ['{D0E551E3-1CEC-4614-A77A-8EAD07A04A8A}']
-    function request: ikubo_rest_client_request<t>;
-    function contenttype(const pcontenttype: string): ikubo_rest_client<t>;
-    function authentication(ptype: tkupo_rest_client_authentication_type = taNone): ikubo_rest_client_authentication<t>;
-    function params: ikubo_rest_client_params<t>;
+    function request: ikuboRequest<t>;
+    function contenttype(const pcontenttype: string): ikuboRestClient<t>;
+    function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
+    function params: ikuboParams<t>;
 
     function get: string; overload;
-    function get(var akubo_object_array: ikubo_rest_client_json_object_array<t>): ikubo_rest_client<t>; overload;
-    function get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>; overload;
+    function get(var akubo_object_array: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
+    function get(var akubo_object: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
 
-    function post: ikubo_rest_client<t>;
-    function put: ikubo_rest_client<t>;
+    function post: ikuboRestClient<t>;
+    function put: ikuboRestClient<t>;
     function delete: boolean;
   end;
 
-  ikubo_rest_client_authentication<t: class> = interface
+  ikuboAuthentication<t: class> = interface
      ['{83779F78-B7FA-4980-8E0C-5A59200F0328}']
-     function types(const ptype: tkupo_rest_client_authentication_type): ikubo_rest_client_authentication<t>; overload;
-     function bearer(const ptoken: string): ikubo_rest_client_authentication<t>; overload;
-     function basic(const plogin, ppassword: string): ikubo_rest_client_authentication<t>;
-     function types: tkupo_rest_client_authentication_type; overload;
+     function types(const ptype: tkuboAuthenticationType): ikuboAuthentication<t>; overload;
+     function bearer(const ptoken: string): ikuboAuthentication<t>; overload;
+     function basic(const plogin, ppassword: string): ikuboAuthentication<t>;
+     function types: tkuboAuthenticationType; overload;
      function token: string;
      function login: string;
      function password: string;
-     function &end: ikubo_rest_client<t>;
+     function &end: ikuboRestClient<t>;
    end;
 
-  ikubo_rest_client_request<t: class> = interface
+  ikuboRequest<t: class> = interface
     ['{B5EF8ADD-EAD7-4A27-81F6-14316A7E3E6E}']
-    function uri(const puri: string): ikubo_rest_client_request<t>; overload;
-    function resource(const presource: string): ikubo_rest_client_request<t>; overload;
-    function accept(const paccept: string): ikubo_rest_client_request<t>; overload;
-    function charset(const pcharset: string): ikubo_rest_client_request<t>; overload;
+    function uri(const puri: string): ikuboRequest<t>; overload;
+    function resource(const presource: string): ikuboRequest<t>; overload;
+    function accept(const paccept: string): ikuboRequest<t>; overload;
+    function charset(const pcharset: string): ikuboRequest<t>; overload;
     function uri: string; overload;
     function resource: string; overload;
     function accept: string; overload;
     function charset: string; overload;
-    function &end: ikubo_rest_client<t>;
+    function &end: ikuboRestClient<t>;
    end;
 
-   ikubo_rest_client_param = interface
+   ikuboParam = interface
      ['{FF5675B5-4540-46CD-B2DA-CA5C75BD9FD1}']
      procedure setname(const value: string);
      procedure setresource(const value: string);
      procedure setvalue(const value: variant);
-     procedure setkind(const value: tkupo_rest_client_param_kind);
+     procedure setkind(const value: tkuboParamKind);
 
      function getname: string;
      function getresource: string;
      function getvalue: variant;
-     function getkind: tkupo_rest_client_param_kind;
+     function getkind: tkuboParamKind;
 
      property name: string read getname write setname;
      property resource: string read getresource write setresource;
      property value: variant read getvalue write setvalue;
-     property kind: tkupo_rest_client_param_kind read getkind write setkind;
+     property kind: tkuboParamKind read getkind write setkind;
    end;
 
-   ikubo_rest_client_params<t: class> = interface
+   ikuboParams<t: class> = interface
      ['{33FE100B-30BB-45AF-9A7A-5EBDBA3D8BBB}']
-     function add(const pname, presource: string; const pvalue: variant; const pkind: tkupo_rest_client_param_kind): ikubo_rest_client_params<t>;
-     function &end: ikubo_rest_client<t>;
+     function add(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind): ikuboParams<t>;
+     function &end: ikuboRestClient<t>;
 
-     function items(const pindex: integer): ikubo_rest_client_param;
+     function items(const pindex: integer): ikuboParam;
      function count: integer;
    end;
 
-   ikubo_rest_client_json_object<t: class> = interface
+   ikuboJsonObject<t: class> = interface
      ['{686DF6FA-2A5A-4FB4-B367-7AD50AA3B71D}']
      function GetValue: T;
      function GetAsJson: String;
@@ -91,7 +91,7 @@ type
      property value: T read GetValue;
    end;
 
-   ikubo_rest_client_json_object_array<t: class> = Interface
+   ikuboJsonArray<t: class> = Interface
     ['{2837FF80-EC33-48E7-8E81-AFFF61E7F6A0}']
     function GetAsJson: String;
     function GetItems: TObjectList<T>;

@@ -21,13 +21,13 @@ uses
 
 type
 
-  tkubo_rest_client<t: class, constructor> = class(tinterfacedobject, ikubo_rest_client<t>)
+  tkuboRestClient<t: class, constructor> = class(tinterfacedobject, ikuboRestClient<t>)
   private
     {private declarations}
-    frequest: ikubo_rest_client_request<t>;
+    frequest: ikuboRequest<t>;
     fcontenttype: string;
-    fauthentication: ikubo_rest_client_authentication<t>;
-    fparams: ikubo_rest_client_params<t>;
+    fauthentication: ikuboAuthentication<t>;
+    fparams: ikuboParams<t>;
 
     frest_client_: trestclient;
     frest_request_: trestrequest;
@@ -42,25 +42,25 @@ type
     constructor create(const puri: string = ''; const presource: string = '');
     destructor destroy; override;
 
-    class function new(const pbase_url: string = ''; const presource: string = ''): ikubo_rest_client<t>;
+    class function new(const pbase_url: string = ''; const presource: string = ''): ikuboRestClient<t>;
 
-    function request: ikubo_rest_client_request<t>;
-    function contenttype(const pcontenttype: string): ikubo_rest_client<t>;
-    function authentication(ptype: tkupo_rest_client_authentication_type = taNone): ikubo_rest_client_authentication<t>;
-    function params: ikubo_rest_client_params<t>;
+    function request: ikuboRequest<t>;
+    function contenttype(const pcontenttype: string): ikuboRestClient<t>;
+    function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
+    function params: ikuboParams<t>;
 
     function get: string; overload;
-    function get(var akubo_object_array: ikubo_rest_client_json_object_array<t>): ikubo_rest_client<t>; overload;
-    function get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>; overload;
+    function get(var akubo_object_array: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
+    function get(var akubo_object: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
 
-    function post: ikubo_rest_client<t>; overload;
-    function put: ikubo_rest_client<t>; overload;
+    function post: ikuboRestClient<t>; overload;
+    function put: ikuboRestClient<t>; overload;
     function delete: boolean;
   end;
 
 implementation
 
-{ tkubo_rest_client<t> }
+{ tkuboRestClient<t> }
 
 uses
   kubo.json.objects,
@@ -68,20 +68,20 @@ uses
   kubo.rest.client.authenticatoin,
   kubo.rest.client.params;
 
-function tkubo_rest_client<t>.authentication(ptype: tkupo_rest_client_authentication_type = taNone): ikubo_rest_client_authentication<t>;
+function tkuboRestClient<t>.authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
 begin
   result := fauthentication.types(ptype);
 end;
 
-function tkubo_rest_client<t>.contenttype(const pcontenttype: string): ikubo_rest_client<t>;
+function tkuboRestClient<t>.contenttype(const pcontenttype: string): ikuboRestClient<t>;
 begin
   result := self;
   fcontenttype := pcontenttype;
 end;
 
-constructor tkubo_rest_client<t>.create(const puri: string = ''; const presource: string = '');
+constructor tkuboRestClient<t>.create(const puri: string = ''; const presource: string = '');
 begin
-  frequest := tkubo_rest_client_request<t>.new(self);
+  frequest := tkuboRequest<t>.new(self);
 
   //set default values rest json client application
     frequest.uri(puri);
@@ -93,23 +93,23 @@ begin
     fcontenttype := 'application/json';
 
   //authentication
-    fauthentication := tkubo_rest_client_authentication<t>.create(self);
+    fauthentication := tkuboAuthentication<t>.create(self);
 
   //params
-    fparams := tkubo_rest_client_params<t>.create(self);
+    fparams := tkuboParams<t>.create(self);
 
   frest_client_ := nil;
   frest_request_:= nil;
   frest_response_:= nil;
 end;
 
-function tkubo_rest_client<t>.delete: boolean;
+function tkuboRestClient<t>.delete: boolean;
 begin
   result := true;
   self.dorequest(trestrequestmethod.rmput);
 end;
 
-destructor tkubo_rest_client<t>.destroy;
+destructor tkuboRestClient<t>.destroy;
 begin
   if frest_response_ <> nil then
     freeandnil(frest_response_);
@@ -126,7 +126,7 @@ begin
   inherited;
 end;
 
-function tkubo_rest_client<t>.doprepare: boolean;
+function tkuboRestClient<t>.doprepare: boolean;
 var
   lint_count_: integer;
   li_str_strem_body: tstringstream;
@@ -246,7 +246,7 @@ begin
   end;
 end;
 
-function tkubo_rest_client<t>.dorequest(const prest_eequest_method: trestrequestmethod): string;
+function tkuboRestClient<t>.dorequest(const prest_eequest_method: trestrequestmethod): string;
 var
   lint_count_: integer;
 begin
@@ -260,7 +260,6 @@ begin
       frest_client_ := trestclient.create(frequest.uri);
       frest_client_.accept := frequest.accept;
       frest_client_.acceptcharset := frequest.charset;
-      //frest_client_.raiseexceptionon500 := false;
 
       frest_response_ := trestresponse.create(frest_client_);
       frest_response_.contenttype   := fcontenttype;
@@ -307,7 +306,7 @@ begin
   end;
 end;
 
-function tkubo_rest_client<t>.get(var akubo_object: ikubo_rest_client_json_object<t>): ikubo_rest_client<t>;
+function tkuboRestClient<t>.get(var akubo_object: ikuboJsonObject<t>): ikuboRestClient<t>;
 var
   lstr_response: string;
 begin
@@ -316,13 +315,13 @@ begin
   if lstr_response.trim <> '' then
   begin
     if akubo_object = nil then
-      akubo_object := tkubo_rest_client_json_object<t>.create;
+      akubo_object := tkuboJsonObject<t>.create;
 
     akubo_object.asjson := lstr_response;
   end;
 end;
 
-function tkubo_rest_client<T>.get(var akubo_object_array: ikubo_rest_client_json_object_array<T>): ikubo_rest_client<t>;
+function tkuboRestClient<T>.get(var akubo_object_array: ikuboJsonArray<T>): ikuboRestClient<t>;
 var
   lstr_response: string;
 begin
@@ -332,40 +331,40 @@ begin
   if lstr_response.trim <> '' then
   begin
     if akubo_object_array = nil then
-      akubo_object_array := tkubo_rest_client_json_object_array<t>.create;
+      akubo_object_array := tkuboJsonArray<t>.create;
 
     akubo_object_array.asjson := lstr_response;
   end;
 end;
 
-function tkubo_rest_client<t>.get: string;
+function tkuboRestClient<t>.get: string;
 begin
   result := self.dorequest(trestrequestmethod.rmget);
 end;
 
-class function tkubo_rest_client<t>.new(const pbase_url: string; const presource: string): ikubo_rest_client<t>;
+class function tkuboRestClient<t>.new(const pbase_url: string; const presource: string): ikuboRestClient<t>;
 begin
   result := self.create(pbase_url, presource);
 end;
 
-function tkubo_rest_client<t>.params: ikubo_rest_client_params<t>;
+function tkuboRestClient<t>.params: ikuboParams<t>;
 begin
   result := fparams;
 end;
 
-function tkubo_rest_client<t>.post: ikubo_rest_client<t>;
+function tkuboRestClient<t>.post: ikuboRestClient<t>;
 begin
   result := self;
   self.dorequest(trestrequestmethod.rmpost);
 end;
 
-function tkubo_rest_client<t>.put: ikubo_rest_client<t>;
+function tkuboRestClient<t>.put: ikuboRestClient<t>;
 begin
   result := self;
   self.dorequest(trestrequestmethod.rmput);
 end;
 
-function tkubo_rest_client<t>.request: ikubo_rest_client_request<t>;
+function tkuboRestClient<t>.request: ikuboRequest<t>;
 begin
   result := frequest;
 end;

@@ -8,95 +8,95 @@ uses
 
 type
 
-  tkubo_rest_client_authentication<t: class> = class(tinterfacedobject, ikubo_rest_client_authentication<t>)
+  tkuboAuthentication<t: class> = class(tinterfacedobject, ikuboAuthentication<t>)
   private
     {private declarations}
     [weak]
-    fparent: ikubo_rest_client<t>;
+    fparent: ikuboRestClient<t>;
 
-    ftype: tkupo_rest_client_authentication_type;
+    ftype: tkuboAuthenticationType;
     flogin: string;
     fpassword: string;
     ftoken: string;
   public
     {public declarations}
-    constructor create(pparent: ikubo_rest_client<t>; pauthentication_type: tkupo_rest_client_authentication_type = taNone);
+    constructor create(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone);
     destructor destroy; override;
 
-    class function new(pparent: ikubo_rest_client<t>; pauthentication_type: tkupo_rest_client_authentication_type = taNone): ikubo_rest_client_authentication<t>;
+    class function new(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
 
-    function types(const ptype: tkupo_rest_client_authentication_type): ikubo_rest_client_authentication<t>; overload;
-    function bearer(const ptoken: string): ikubo_rest_client_authentication<t>;
-    function basic(const plogin, ppassword: string): ikubo_rest_client_authentication<t>;
-    function types: tkupo_rest_client_authentication_type; overload;
+    function types(const ptype: tkuboAuthenticationType): ikuboAuthentication<t>; overload;
+    function bearer(const ptoken: string): ikuboAuthentication<t>;
+    function basic(const plogin, ppassword: string): ikuboAuthentication<t>;
+    function types: tkuboAuthenticationType; overload;
     function token: string;
     function login: string;
     function password: string;
-    function &end: ikubo_rest_client<t>;
+    function &end: ikuboRestClient<t>;
   end;
 
 implementation
 
 
-{ tkubo_rest_client_authentication<t> }
+{ tkuboAuthentication<t> }
 
-function tkubo_rest_client_authentication<t>.basic(const plogin, ppassword: string): ikubo_rest_client_authentication<t>;
+function tkuboAuthentication<t>.basic(const plogin, ppassword: string): ikuboAuthentication<t>;
 begin
   result := self;
   flogin := plogin;
   fpassword := ppassword;
 end;
 
-function tkubo_rest_client_authentication<t>.bearer(const ptoken: string): ikubo_rest_client_authentication<t>;
+function tkuboAuthentication<t>.bearer(const ptoken: string): ikuboAuthentication<t>;
 begin
   result := self;
   ftoken := ptoken;
 end;
 
-constructor tkubo_rest_client_authentication<t>.create(pparent: ikubo_rest_client<t>; pauthentication_type: tkupo_rest_client_authentication_type = taNone);
+constructor tkuboAuthentication<t>.create(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone);
 begin
   ftype := pauthentication_type;
   fparent := pparent;
 end;
 
-destructor tkubo_rest_client_authentication<t>.destroy;
+destructor tkuboAuthentication<t>.destroy;
 begin
 
   inherited;
 end;
 
-function tkubo_rest_client_authentication<t>.&end: ikubo_rest_client<t>;
+function tkuboAuthentication<t>.&end: ikuboRestClient<t>;
 begin
   result := fparent;
 end;
 
-function tkubo_rest_client_authentication<t>.login: string;
+function tkuboAuthentication<t>.login: string;
 begin
   result := flogin;
 end;
 
-class function tkubo_rest_client_authentication<t>.new(pparent: ikubo_rest_client<t>; pauthentication_type: tkupo_rest_client_authentication_type = taNone): ikubo_rest_client_authentication<t>;
+class function tkuboAuthentication<t>.new(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
 begin
   result := self.create(pparent, pauthentication_type);
 end;
 
-function tkubo_rest_client_authentication<t>.password: string;
+function tkuboAuthentication<t>.password: string;
 begin
   result := fpassword;
 end;
 
-function tkubo_rest_client_authentication<t>.types: tkupo_rest_client_authentication_type;
+function tkuboAuthentication<t>.types: tkuboAuthenticationType;
 begin
   result := ftype;
 end;
 
-function tkubo_rest_client_authentication<t>.types(const ptype: tkupo_rest_client_authentication_type): ikubo_rest_client_authentication<t>;
+function tkuboAuthentication<t>.types(const ptype: tkuboAuthenticationType): ikuboAuthentication<t>;
 begin
   result := self;
   ftype := ptype;
 end;
 
-function tkubo_rest_client_authentication<t>.token: string;
+function tkuboAuthentication<t>.token: string;
 begin
   result := ftoken;
 end;
