@@ -159,7 +159,7 @@ begin
         begin
           if trim(vartostr(params.items(lint_count_).value)) = '' then
             exit;
-          frestClient.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkHTTPHEADER);
+          frestClient.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkHTTPHEADER, [TRESTRequestParameterOption.poDoNotEncode]);
         end;
       kpkURLSegment:
         begin
