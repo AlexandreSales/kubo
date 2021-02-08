@@ -79,7 +79,7 @@ end;
 
 function TkuboJsonArray<T>.getasjson: string;
 begin
-  result := rest.json.tjson.objecttojsonstring(self, foptions);
+  result := rest.json.tjson.objecttojsonstring(self.items, foptions);
 end;
 
 function TkuboJsonArray<T>.getitems: tobjectlist<T>;
@@ -147,7 +147,7 @@ end;
 
 function TkuboJsonObject<T>.GetAsJson: String;
 begin
-  result := Rest.Json.TJson.ObjectToJsonString(Self, FOptions);
+  result := Rest.Json.TJson.ObjectToJsonString(Self.Value, FOptions);
 end;
 
 function TkuboJsonObject<T>.GetValue: T;

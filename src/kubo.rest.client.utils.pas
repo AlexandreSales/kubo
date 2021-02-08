@@ -26,7 +26,7 @@ implementation
     if trim(lstr_result) <> '' then
     begin
       {$IFDEF IOS}
-        if lstr_result[1] = '"' then
+        if lstr_result[0] = '"' then
           lstr_result := copy(lstr_result, 2, length(lstr_result) - 1);
       {$ELSE}
         {$IFDEF ANDROID}

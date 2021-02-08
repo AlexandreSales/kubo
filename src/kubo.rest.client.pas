@@ -14,6 +14,7 @@ uses
   rest.client,
   rest.types,
   rest.json,
+  rest.authenticator.basic,
   kubo.rest.client.interfaces,
   kubo.rest.client.types,
   kubo.rest.client.utils,
@@ -29,11 +30,12 @@ type
     fauthentication: ikuboAuthentication<t>;
     fparams: ikuboParams<t>;
 
-    frest_client_: trestclient;
-    frest_request_: trestrequest;
-    frest_response_: trestresponse;
+    frestClient: trestclient;
+    frestRequest: trestrequest;
+    frestResponse: trestresponse;
+    fhttpBasicAuthentication: thttpbasicauthenticator;
 
-    frest_request_json_body_itens: tjsonobject;
+    frestRequestJsonBody: tjsonobject;
 
     function doprepare: boolean;
     function dorequest(const prest_eequest_method: trestrequestmethod): string;
@@ -98,9 +100,10 @@ begin
   //params
     fparams := tkuboParams<t>.create(self);
 
-  frest_client_ := nil;
-  frest_request_:= nil;
-  frest_response_:= nil;
+  frestClient := nil;
+  frestRequest:= nil;
+  frestResponse:= nil;
+  fhttpBasicAuthentication := nil;
 end;
 
 function tkuboRestClient<t>.delete: boolean;
@@ -111,17 +114,20 @@ end;
 
 destructor tkuboRestClient<t>.destroy;
 begin
-  if frest_response_ <> nil then
-    freeandnil(frest_response_);
+  if frestResponse <> nil then
+    freeandnil(frestResponse);
 
-  if frest_request_ <> nil then
-    freeandnil(frest_request_);
+  if frestRequest <> nil then
+    freeandnil(frestRequest);
 
-  if frest_client_ <> nil then
-    freeandnil(frest_client_);
+  if fhttpBasicAuthentication <> nil then
+    freeandnil(fhttpBasicAuthentication);
 
-  if frest_request_json_body_itens <> nil then
-    freeandnil(frest_request_json_body_itens);
+  if frestClient <> nil then
+    freeandnil(frestClient);
+
+  if frestRequestJsonBody <> nil then
+    freeandnil(frestRequestJsonBody);
 
   inherited;
 end;
@@ -136,10 +142,16 @@ begin
 
   try
     case fauthentication.types of
-    taBasic: params.add('Authorization', '', 'Basic ' +  tnetencoding.base64.encode(fauthentication.login + ':' + fauthentication.password), kpkHTTPHeader);
+    taBasic:
+      begin
+        fhttpBasicAuthentication := THTTPBasicAuthenticator.create(nil);
+        fhttpBasicAuthentication.username := fauthentication.login;
+        fhttpBasicAuthentication.password := fauthentication.password;
+
+        frestClient.Authenticator := fhttpBasicAuthentication;
+      end;
     taBearer: params.add('Authorization', '', 'Bearer ' + fauthentication.token, kpkHTTPHeader);
     end;
-
 
     for lint_count_ := 0 to params.count - 1 do
       case params.items(lint_count_).kind of
@@ -147,18 +159,23 @@ begin
         begin
           if trim(vartostr(params.items(lint_count_).value)) = '' then
             exit;
-          frest_client_.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkHTTPHEADER);
+          frestClient.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkHTTPHEADER);
         end;
       kpkURLSegment:
+        begin
+          if vartostr(params.items(lint_count_).value).trim <> '' then
+            frestRequest.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkURLSEGMENT);
+        end;
+      kpkQuery:
         begin
           if trim(vartostr(params.items(lint_count_).value)) = '' then
             exit;
 
-          frest_request_.resource := frest_request_.resource +
+          frestRequest.resource := frestRequest.resource +
                                      iif(
                                           params.items(lint_count_).resource.trim <> '',
                                           iif(
-                                              pos('/' + params.items(lint_count_).resource.trim, frest_request_.resource) > 0,
+                                              pos('/' + params.items(lint_count_).resource.trim, frestRequest.resource) > 0,
                                               '',
                                               '/'  + params.items(lint_count_).resource.trim
                                              ),
@@ -166,13 +183,13 @@ begin
                                              vartostr(params.items(lint_count_).value).trim = '',
                                               params.items(lint_count_).name,
                                               iif(
-                                                  pos('?', frest_request_.resource) > 0,
+                                                  pos('?', frestRequest.resource) > 0,
                                                   '',
                                                   '?'
                                                   )
                                               +
                                               iif(
-                                                  pos('}', frest_request_.resource) > 0,
+                                                  pos('}', frestRequest.resource) > 0,
                                                   '&',
                                                   ''
                                                  )
@@ -181,12 +198,12 @@ begin
                                              )
                                           );
 
-          frest_request_.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkURLSEGMENT);
+          frestRequest.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkURLSEGMENT);
         end;
       kpkGetPost:
         begin
           if vartostr(params.items(lint_count_).value).trim <> '' then
-            frest_request_.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkGETorPOST);
+            frestRequest.addparameter(params.items(lint_count_).name, vartostr(params.items(lint_count_).value), pkGETorPOST);
         end;
       kpkRequestBody:
         begin
@@ -194,8 +211,8 @@ begin
             exit;
 
           {cria o json body se ainda não estiver criado}
-            if frest_request_json_body_itens = nil then
-              frest_request_json_body_itens := system.json.tjsonobject.create;
+            if frestRequestJsonBody = nil then
+              frestRequestJsonBody := system.json.tjsonobject.create;
 
           {verifica se o parametro passado ja não é oum json string}
             var li_rest_request_json_body_iten: tjsonobject;
@@ -214,13 +231,13 @@ begin
             {se a variavel "li_rest_request_json_body_iten" for difernete de nil quer diser que o valor passado
             no parametro era um json string assim deve adicionar o json item direto, se não adiciona o valor}
             if li_rest_request_json_body_iten  <> nil then
-              frest_request_json_body_itens.addpair(params.items(lint_count_).name, li_rest_request_json_body_iten)
+              frestRequestJsonBody.addpair(params.items(lint_count_).name, li_rest_request_json_body_iten)
             else
-              frest_request_json_body_itens.addpair(params.items(lint_count_).name, params.items(lint_count_).value);
+              frestRequestJsonBody.addpair(params.items(lint_count_).name, params.items(lint_count_).value);
 
             {cria o body data para adicionar o valor no bory request}
              li_str_strem_body := tstringstream.create(
-                                            stringreplace(unquoted(frest_request_json_body_itens.tojson), '\', '', [rfReplaceAll]),
+                                            stringreplace(unquoted(frestRequestJsonBody.tojson), '\', '', [rfReplaceAll]),
                                             tencoding.utf8);
           end
           else
@@ -234,8 +251,8 @@ begin
             freeandnil(li_rest_request_json_body_iten);
 
           {adiconar o bodydata no bory request}
-            frest_request_.clearbody;
-            frest_request_.addbody(li_str_strem_body, trestcontenttype.ctapplication_json);
+            frestRequest.clearbody;
+            frestRequest.addbody(li_str_strem_body, trestcontenttype.ctapplication_json);
             freeandnil(li_str_strem_body);
         end;
       end;
@@ -251,58 +268,59 @@ var
   lint_count_: integer;
 begin
   result := '';
-  frest_client_ := nil;
-  frest_response_ := nil;
-  frest_request_ := nil;
+  frestClient := nil;
+  frestResponse := nil;
+  frestRequest := nil;
 
   try
     try
-      frest_client_ := trestclient.create(frequest.uri);
-      frest_client_.accept := frequest.accept;
-      frest_client_.acceptcharset := frequest.charset;
+      frestClient := trestclient.create(frequest.uri);
+      frestClient.accept := frequest.accept;
+      frestClient.acceptcharset := frequest.charset;
 
-      frest_response_ := trestresponse.create(frest_client_);
-      frest_response_.contenttype   := fcontenttype;
+      frestResponse := trestresponse.create(frestClient);
+      frestResponse.contenttype   := fcontenttype;
 
-      frest_request_ := trestrequest.create(frest_client_);
-      frest_request_.client := frest_client_;
-      frest_request_.response := frest_response_;
+      frestRequest := trestrequest.create(frestClient);
+      frestRequest.client := frestClient;
+      frestRequest.response := frestResponse;
+      frestRequest.synchronizedevents := false;
 
-      frest_request_.method := prest_eequest_method;
-      frest_request_.resource := frequest.resource;
+      frestRequest.method := prest_eequest_method;
+      frestRequest.resource := frequest.resource;
 
       if doprepare then
       begin
         try
-          frest_request_.execute;
+          frestRequest.execute;
         except
           on e: exception do
           begin
             if pos('HTTP/1.1 500', e.message) > 0 then
-              result := frest_response_.jsontext
+              result := frestResponse.jsontext
             else
               raise;
           end
         end;
 
         if result.trim = '' then
-          result := frest_response_.jsontext;
+          result := frestResponse.jsontext;
       end;
     except
       on E: Exception do
         raise;
     end;
   finally
-    frest_client_.disconnect;
+    frestClient.disconnect;
 
-    if frest_response_ <> nil then
-      freeandnil(frest_response_);
+    if frestResponse <> nil then
+      freeandnil(frestResponse);
 
-    if frest_request_ <> nil then
-      freeandnil(frest_request_);
+    if frestRequest <> nil then
+      freeandnil(frestRequest);
 
-    if frest_client_ <> nil then
-      freeandnil(frest_client_);
+    if frestClient <> nil then
+      freeandnil(frestClient);
   end;
 end;
 
