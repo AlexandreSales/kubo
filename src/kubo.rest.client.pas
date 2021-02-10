@@ -332,10 +332,13 @@ begin
   lstr_response := self.get;
   if lstr_response.trim <> '' then
   begin
-    if akubo_object = nil then
-      akubo_object := tkuboJsonObject<t>.create;
+    if not(pos('error', lstr_response) > 0) then
+    begin
+      if akubo_object = nil then
+        akubo_object := tkuboJsonObject<t>.create;
 
-    akubo_object.asjson := lstr_response;
+      akubo_object.asjson := lstr_response;
+    end;
   end;
 end;
 
@@ -348,10 +351,13 @@ begin
   lstr_response := Self.get;
   if lstr_response.trim <> '' then
   begin
-    if akubo_object_array = nil then
-      akubo_object_array := tkuboJsonArray<t>.create;
+    if not(pos('error', lstr_response) > 0) then
+    begin
+      if akubo_object_array = nil then
+        akubo_object_array := tkuboJsonArray<t>.create;
 
-    akubo_object_array.asjson := lstr_response;
+      akubo_object_array.asjson := lstr_response;
+    end;
   end;
 end;
 
