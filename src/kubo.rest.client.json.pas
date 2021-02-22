@@ -137,6 +137,7 @@ end;
 constructor TkuboJsonObject<T>.Create;
 begin
   foptions := [jodateisutc, jodateformatiso8601];
+  FValue := T.Create;
 end;
 
 destructor TkuboJsonObject<T>.Destroy;

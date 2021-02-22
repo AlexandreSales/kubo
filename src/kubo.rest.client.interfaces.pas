@@ -4,6 +4,7 @@ interface
 
 uses
   system.generics.collections,
+  system.json,
   kubo.rest.client.types;
 
 type
@@ -19,12 +20,15 @@ type
     function contenttype(const pcontenttype: string): ikuboRestClient<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
+    function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
 
     function get: string; overload;
-    function get(var akubo_object_array: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
-    function get(var akubo_object: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
+    function get(var objecrResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
 
-    function post: ikuboRestClient<t>;
+    function post: ikuboRestClient<t>; overload;
+    function post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
+    function post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
     function put: ikuboRestClient<t>;
     function delete: boolean;
   end;
