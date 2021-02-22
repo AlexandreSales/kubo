@@ -29,6 +29,7 @@ type
     fcontenttype: string;
     fauthentication: ikuboAuthentication<t>;
     fparams: ikuboParams<t>;
+    fobjectResponseError: tjsonObject;
 
     frestClient: trestclient;
     frestRequest: trestrequest;
@@ -50,12 +51,16 @@ type
     function contenttype(const pcontenttype: string): ikuboRestClient<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
+    function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
 
     function get: string; overload;
-    function get(var akubo_object_array: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
-    function get(var akubo_object: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
+    function get(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
 
     function post: ikuboRestClient<t>; overload;
+    function post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
+    function post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+
     function put: ikuboRestClient<t>; overload;
     function delete: boolean;
   end;
@@ -100,6 +105,7 @@ begin
   //params
     fparams := tkuboParams<t>.create(self);
 
+  fobjectResponseError := nil;
   frestClient := nil;
   frestRequest:= nil;
   frestResponse:= nil;
@@ -128,6 +134,9 @@ begin
 
   if frestRequestJsonBody <> nil then
     freeandnil(frestRequestJsonBody);
+
+  if fobjectResponseError <> nil then
+    freeandnil(fobjectResponseError);
 
   inherited;
 end;
@@ -279,7 +288,7 @@ begin
       frestClient.acceptcharset := frequest.charset;
 
       frestResponse := trestresponse.create(frestClient);
-      frestResponse.contenttype   := fcontenttype;
+      frestResponse.contenttype := fcontenttype;
 
       frestRequest := trestrequest.create(frestClient);
       frestRequest.client := frestClient;
@@ -295,16 +304,13 @@ begin
           frestRequest.execute;
         except
           on e: exception do
-          begin
-            if pos('HTTP/1.1 500', e.message) > 0 then
-              result := frestResponse.jsontext
-            else
-              raise;
-          end
+            raise;
         end;
 
-        if result.trim = '' then
-          result := frestResponse.jsontext;
+        if frestResponse.StatusCode = 200 then
+            result := frestResponse.jsontext
+        else
+          fobjectResponseError := tjsonObject.parseJSONValue(TEncoding.ASCII.GetBytes(frestResponse.jsontext), 0) as TJSONObject;
       end;
     except
       on E: Exception do
@@ -324,7 +330,20 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.get(var akubo_object: ikuboJsonObject<t>): ikuboRestClient<t>;
+function tkuboRestClient<t>.responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
+begin
+  result := self;
+
+  if (fobjectResponseError <> nil) then
+  begin
+    if objectResponseError <> nil then
+      freeandnil(objectResponseError);
+
+    objectResponseError := tjsonObject.parseJSONValue(fobjectResponseError.tojson) as tjsonobject;
+  end;
+end;
+
+function tkuboRestClient<t>.get(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
 var
   lstr_response: string;
 begin
@@ -334,15 +353,15 @@ begin
   begin
     if not(pos('error', lstr_response) > 0) then
     begin
-      if akubo_object = nil then
-        akubo_object := tkuboJsonObject<t>.create;
+      if objectResponse = nil then
+        objectResponse := tkuboJsonObject<t>.create;
 
-      akubo_object.asjson := lstr_response;
+      objectResponse.asjson := lstr_response;
     end;
   end;
 end;
 
-function tkuboRestClient<T>.get(var akubo_object_array: ikuboJsonArray<T>): ikuboRestClient<t>;
+function tkuboRestClient<t>.get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>;
 var
   lstr_response: string;
 begin
@@ -353,10 +372,10 @@ begin
   begin
     if not(pos('error', lstr_response) > 0) then
     begin
-      if akubo_object_array = nil then
-        akubo_object_array := tkuboJsonArray<t>.create;
+      if arrayResponse = nil then
+        arrayResponse := tkuboJsonArray<t>.create;
 
-      akubo_object_array.asjson := lstr_response;
+      arrayResponse.asjson := lstr_response;
     end;
   end;
 end;
@@ -374,6 +393,39 @@ end;
 function tkuboRestClient<t>.params: ikuboParams<t>;
 begin
   result := fparams;
+end;
+
+function tkuboRestClient<t>.post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
+var
+  lstrResponse: string;
+begin
+  result := self;
+  lstrResponse := self.dorequest(trestrequestmethod.rmpost);
+
+  if lstrResponse.trim <> '' then
+  begin
+    if objectResponse = nil then
+      objectResponse := tkuboJsonObject<t>.create;
+
+    objectResponse.asJson := lstrResponse;
+  end;
+end;
+
+
+function tkuboRestClient<t>.post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>;
+var
+  lstrResponse: string;
+begin
+  result := self;
+  lstrResponse := self.dorequest(trestrequestmethod.rmpost);
+
+  if lstrResponse.trim <> '' then
+  begin
+    if arrayResponse = nil then
+      arrayResponse := tkuboJsonArray<t>.create;
+
+    arrayResponse.asJson := lstrResponse;
+  end;
 end;
 
 function tkuboRestClient<t>.post: ikuboRestClient<t>;
