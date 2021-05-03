@@ -17,6 +17,7 @@ uses
   rest.authenticator.basic,
   kubo.rest.client.interfaces,
   kubo.rest.client.types,
+  kubo.rest.client.consts,
   kubo.rest.client.utils,
   kubo.rest.client.json;
 
@@ -26,7 +27,10 @@ type
   private
     {private declarations}
     frequest: ikuboRequest<t>;
+    fstatusCode: integer;
     fcontenttype: string;
+    fconnectTimeOut: integer;
+    freadTimeOut: integer;
     fauthentication: ikuboAuthentication<t>;
     fparams: ikuboParams<t>;
     fobjectResponseError: tjsonObject;
@@ -49,9 +53,12 @@ type
 
     function request: ikuboRequest<t>;
     function contenttype(const pcontenttype: string): ikuboRestClient<t>;
+    function connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+    function readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
     function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
+    function statusCode: integer;
 
     function get: string; overload;
     function get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
@@ -62,7 +69,10 @@ type
     function post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
 
     function put: ikuboRestClient<t>; overload;
-    function delete: boolean;
+    function put(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+
+    function delete: boolean; overload;
+    function delete(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
   end;
 
 implementation
@@ -78,6 +88,12 @@ uses
 function tkuboRestClient<t>.authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
 begin
   result := fauthentication.types(ptype);
+end;
+
+function tkuboRestClient<t>.connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+begin
+  result := self;
+  fconnectTimeOut := ptimeOut;
 end;
 
 function tkuboRestClient<t>.contenttype(const pcontenttype: string): ikuboRestClient<t>;
@@ -99,6 +115,10 @@ begin
   //contenttype
     fcontenttype := 'application/json';
 
+  //timeOut
+    fconnectTimeOut := cConnectTimeOut;
+    freadTimeOut := cReadTimeOut;
+
   //authentication
     fauthentication := tkuboAuthentication<t>.create(self);
 
@@ -110,12 +130,30 @@ begin
   frestRequest:= nil;
   frestResponse:= nil;
   fhttpBasicAuthentication := nil;
+
+  fstatusCode := 0;
 end;
 
 function tkuboRestClient<t>.delete: boolean;
 begin
   result := true;
   self.dorequest(trestrequestmethod.rmput);
+end;
+
+function tkuboRestClient<t>.delete(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
+var
+  lstrResponse: string;
+begin
+  result := self;
+  lstrResponse := self.dorequest(trestrequestmethod.rmDELETE);
+
+  if (lstrResponse.trim <> '') and (lstrResponse.trim <> '{}') then
+  begin
+    if objectResponse = nil then
+      objectResponse := tkuboJsonObject<t>.create;
+
+    objectResponse.asJson := lstrResponse;
+  end;
 end;
 
 destructor tkuboRestClient<t>.destroy;
@@ -216,6 +254,7 @@ begin
         end;
       kpkRequestBody:
         begin
+
           if trim(vartostr(params.items(lint_count_).value)) = '' then
             exit;
 
@@ -227,9 +266,14 @@ begin
             var li_rest_request_json_body_iten: tjsonobject;
             try
               li_rest_request_json_body_iten := tjsonobject.parsejsonvalue(
-                                                              tencoding.ascii.getbytes(vartostr(params.items(lint_count_).value))
+                                                              tencoding.ascii.getbytes(
+                                                                                       {$ifdef mswindows}
+                                                                                          unquoted(vartostr(params.items(lint_count_).value))
+                                                                                       {$else}
+                                                                                          vartostr(params.items(lint_count_).value)
+                                                                                       {$endif}
+                                                                                      )
                                                               , 0) as tjsonobject;
-
             except
               if li_rest_request_json_body_iten <> nil then
                 freeandnil(li_rest_request_json_body_iten);
@@ -246,23 +290,33 @@ begin
 
             {cria o body data para adicionar o valor no bory request}
              li_str_strem_body := tstringstream.create(
-                                            stringreplace(unquoted(frestRequestJsonBody.tojson), '\', '', [rfReplaceAll]),
+                                            unquoted(frestRequestJsonBody.tojson),
                                             tencoding.utf8);
           end
           else
+          begin
             {cria o body data para adicionar o valor no bory request}
-            li_str_strem_body := tstringstream.create(
-                                            stringreplace(unquoted(li_rest_request_json_body_iten.tojson), '\', '', [rfReplaceAll]),
-                                            tencoding.utf8);
-
+            if li_rest_request_json_body_iten <> nil then
+              li_str_strem_body := tstringstream.create(
+                                                        {$ifdef mswindows}
+                                                          unquoted(li_rest_request_json_body_iten.tojson)
+                                                        {$else}
+                                                          li_rest_request_json_body_iten.tojson
+                                                        {$endif}
+                                                        ,
+                                              tencoding.utf8);
+          end;
 
           if li_rest_request_json_body_iten <> nil then
             freeandnil(li_rest_request_json_body_iten);
 
           {adiconar o bodydata no bory request}
             frestRequest.clearbody;
-            frestRequest.addbody(li_str_strem_body, trestcontenttype.ctapplication_json);
-            freeandnil(li_str_strem_body);
+            if li_str_strem_body <> nil then
+            begin
+              frestRequest.addbody(li_str_strem_body, trestcontenttype.ctapplication_json);
+              freeandnil(li_str_strem_body);
+            end;
         end;
       end;
 
@@ -286,6 +340,8 @@ begin
       frestClient := trestclient.create(frequest.uri);
       frestClient.accept := frequest.accept;
       frestClient.acceptcharset := frequest.charset;
+      frestClient.connectTimeOut := fconnectTimeOut;
+      frestClient.readTimeOut := freadTimeOut;
 
       frestResponse := trestresponse.create(frestClient);
       frestResponse.contenttype := fcontenttype;
@@ -307,8 +363,9 @@ begin
             raise;
         end;
 
+        fstatusCode := frestResponse.StatusCode;
         if frestResponse.StatusCode = 200 then
-            result := frestResponse.jsontext
+          result := frestResponse.Content
         else
           fobjectResponseError := tjsonObject.parseJSONValue(TEncoding.ASCII.GetBytes(frestResponse.jsontext), 0) as TJSONObject;
       end;
@@ -343,13 +400,18 @@ begin
   end;
 end;
 
+function tkuboRestClient<t>.statusCode: integer;
+begin
+  result := fstatusCode;
+end;
+
 function tkuboRestClient<t>.get(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
 var
   lstr_response: string;
 begin
   result := self;
   lstr_response := self.get;
-  if lstr_response.trim <> '' then
+  if (lstr_response.trim <> '') and (lstr_response.trim <> '{}') then
   begin
     if not(pos('error', lstr_response) > 0) then
     begin
@@ -368,7 +430,7 @@ begin
   Result := Self;
 
   lstr_response := Self.get;
-  if lstr_response.trim <> '' then
+  if (lstr_response.trim <> '') and (lstr_response.trim <> '[]') then
   begin
     if not(pos('error', lstr_response) > 0) then
     begin
@@ -412,6 +474,22 @@ begin
 end;
 
 
+function tkuboRestClient<t>.put(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
+var
+  lstrResponse: string;
+begin
+  result := self;
+  lstrResponse := self.dorequest(trestrequestmethod.rmput);
+
+  if (lstrResponse.trim <> '') and (lstrResponse.trim <> '{}') then
+  begin
+    if objectResponse = nil then
+      objectResponse := tkuboJsonObject<t>.create;
+
+    objectResponse.asJson := lstrResponse;
+  end;
+end;
+
 function tkuboRestClient<t>.post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>;
 var
   lstrResponse: string;
@@ -438,6 +516,12 @@ function tkuboRestClient<t>.put: ikuboRestClient<t>;
 begin
   result := self;
   self.dorequest(trestrequestmethod.rmput);
+end;
+
+function tkuboRestClient<t>.readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+begin
+  result := self;
+  freadTimeOut := ptimeOut;
 end;
 
 function tkuboRestClient<t>.request: ikuboRequest<t>;
