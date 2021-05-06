@@ -18,9 +18,12 @@ type
     ['{D0E551E3-1CEC-4614-A77A-8EAD07A04A8A}']
     function request: ikuboRequest<t>;
     function contenttype(const pcontenttype: string): ikuboRestClient<t>;
+    function connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+    function readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
     function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
+    function statusCode: integer;
 
     function get: string; overload;
     function get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
@@ -29,8 +32,12 @@ type
     function post: ikuboRestClient<t>; overload;
     function post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
     function post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
-    function put: ikuboRestClient<t>;
-    function delete: boolean;
+
+    function put: ikuboRestClient<t>; overload;
+    function put(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+
+    function delete: boolean; overload;
+    function delete(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
   end;
 
   ikuboAuthentication<t: class> = interface
@@ -90,8 +97,9 @@ type
      function GetValue: T;
      function GetAsJson: String;
      procedure SetAsJson(aValue: String);
-     property AsJson: String read GetAsJson write SetAsJson;
+     procedure FreeValue;
 
+     property AsJson: String read GetAsJson write SetAsJson;
      property value: T read GetValue;
    end;
 

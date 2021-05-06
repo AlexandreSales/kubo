@@ -57,6 +57,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
+    procedure FreeValue;
     property Value: T read GetValue;
   end;
 
@@ -68,7 +69,7 @@ implementation
 
 constructor TkuboJsonArray<T>.create;
 begin
-  foptions := [jodateisutc, jodateformatiso8601];
+  foptions := [jodateisutc, jodateformatiso8601, joDateIsUTC];
 end;
 
 destructor TkuboJsonArray<T>.destroy;
@@ -136,14 +137,21 @@ end;
 
 constructor TkuboJsonObject<T>.Create;
 begin
-  foptions := [jodateisutc, jodateformatiso8601];
+  foptions := [jodateisutc, jodateformatiso8601, joDateIsUTC];
   FValue := T.Create;
 end;
 
 destructor TkuboJsonObject<T>.Destroy;
 begin
-  GetValue.Free;
+  if FValue <> nil then
+    FreeAndNil(FValue);
   inherited;
+end;
+
+procedure TkuboJsonObject<T>.FreeValue;
+begin
+  if FValue <> nil then
+   freeandNil(FValue);
 end;
 
 function TkuboJsonObject<T>.GetAsJson: String;
@@ -189,10 +197,10 @@ begin
         raise EConversionError.Create(SCannotCreateObject);
     end;
 
-    if FValue = nil then
-      FValue := T.Create;
+    if FValue <> nil then
+      freeandnil(fvalue);
 
-    TObject(FValue).AssignFromJSON(aValue);
+    fvalue := rest.json.tjson.jsontoobject<t>(aValue, fOptions);
   finally
     JsonValue.Free;
   end;
