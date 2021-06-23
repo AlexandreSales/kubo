@@ -31,6 +31,8 @@ type
     fcontenttype: string;
     fconnectTimeOut: integer;
     freadTimeOut: integer;
+    fusrAgent: string;
+
     fauthentication: ikuboAuthentication<t>;
     fparams: ikuboParams<t>;
     fobjectResponseError: tjsonObject;
@@ -55,6 +57,7 @@ type
     function contenttype(const pcontenttype: string): ikuboRestClient<t>;
     function connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
     function readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+    function usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
     function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
@@ -104,6 +107,7 @@ end;
 
 constructor tkuboRestClient<t>.create(const puri: string = ''; const presource: string = '');
 begin
+  fusrAgent := 'Kubo RestClient';
   frequest := tkuboRequest<t>.new(self);
 
   //set default values rest json client application
@@ -264,16 +268,21 @@ begin
 
           {verifica se o parametro passado ja não é oum json string}
             var li_rest_request_json_body_iten: tjsonobject;
+            var li_rest_json_value: tjsonvalue;
             try
-              li_rest_request_json_body_iten := tjsonobject.parsejsonvalue(
-                                                              tencoding.ascii.getbytes(
-                                                                                       {$ifdef mswindows}
-                                                                                          unquoted(vartostr(params.items(lint_count_).value))
-                                                                                       {$else}
-                                                                                          vartostr(params.items(lint_count_).value)
-                                                                                       {$endif}
-                                                                                      )
-                                                              , 0) as tjsonobject;
+              li_rest_json_value := tjsonobject.parsejsonvalue(tencoding.ascii.getbytes({$ifdef mswindows}
+                                                                       unquoted(vartostr(params.items(lint_count_).value))
+                                                                    {$else}
+                                                                      vartostr(params.items(lint_count_).value)
+                                                                    {$endif})
+                                                              , 0);
+
+
+              if li_rest_json_value is tjsonobject then
+                li_rest_request_json_body_iten := li_rest_json_value as tjsonobject;
+
+              if li_rest_json_value is tjsonarray then
+                li_rest_request_json_body_iten := tjsonobject(li_rest_json_value as tjsonarray);
             except
               if li_rest_request_json_body_iten <> nil then
                 freeandnil(li_rest_request_json_body_iten);
@@ -343,6 +352,9 @@ begin
       frestClient.connectTimeOut := fconnectTimeOut;
       frestClient.readTimeOut := freadTimeOut;
 
+      if fusrAgent.trim <> '' then
+        frestClient.userAgent := fusrAgent;
+
       frestResponse := trestresponse.create(frestClient);
       frestResponse.contenttype := fcontenttype;
 
@@ -403,6 +415,12 @@ end;
 function tkuboRestClient<t>.statusCode: integer;
 begin
   result := fstatusCode;
+end;
+
+function tkuboRestClient<t>.usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
+begin
+  result := self;
+  fusrAgent := pstrUsrAgent;
 end;
 
 function tkuboRestClient<t>.get(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
