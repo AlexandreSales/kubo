@@ -20,6 +20,7 @@ type
     function contenttype(const pcontenttype: string): ikuboRestClient<t>;
     function connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
     function readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+    function usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
     function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
