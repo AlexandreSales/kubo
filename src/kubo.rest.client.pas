@@ -270,7 +270,7 @@ begin
             var li_rest_request_json_body_iten: tjsonobject;
             var li_rest_json_value: tjsonvalue;
             try
-              li_rest_json_value := tjsonobject.parsejsonvalue(tencoding.ascii.getbytes({$ifdef mswindows}
+              li_rest_json_value := tjsonobject.parsejsonvalue(tencoding.utf8.getbytes({$ifdef mswindows}
                                                                        unquoted(vartostr(params.items(lint_count_).value))
                                                                     {$else}
                                                                       vartostr(params.items(lint_count_).value)
@@ -379,7 +379,7 @@ begin
         if frestResponse.StatusCode = 200 then
           result := frestResponse.Content
         else
-          fobjectResponseError := tjsonObject.parseJSONValue(TEncoding.ASCII.GetBytes(frestResponse.jsontext), 0) as TJSONObject;
+          fobjectResponseError := tjsonObject.parseJSONValue(tencoding.utf8.GetBytes(frestResponse.jsontext), 0) as TJSONObject;
       end;
     except
       on E: Exception do
