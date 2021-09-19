@@ -31,8 +31,6 @@ type
     fcontenttype: string;
     fconnectTimeOut: integer;
     freadTimeOut: integer;
-    fusrAgent: string;
-
     fauthentication: ikuboAuthentication<t>;
     fparams: ikuboParams<t>;
     fobjectResponseError: tjsonObject;
@@ -57,7 +55,6 @@ type
     function contenttype(const pcontenttype: string): ikuboRestClient<t>;
     function connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
     function readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
-    function usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
     function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
@@ -107,7 +104,6 @@ end;
 
 constructor tkuboRestClient<t>.create(const puri: string = ''; const presource: string = '');
 begin
-  fusrAgent := 'Kubo RestClient';
   frequest := tkuboRequest<t>.new(self);
 
   //set default values rest json client application
@@ -262,27 +258,20 @@ begin
           if trim(vartostr(params.items(lint_count_).value)) = '' then
             exit;
 
-          {cria o json body se ainda não estiver criado}
-            if frestRequestJsonBody = nil then
-              frestRequestJsonBody := system.json.tjsonobject.create;
+          var jasonValue := tparser.FromJSON(vartostr(params.items(lint_count_).value));
 
           {verifica se o parametro passado ja não é oum json string}
             var li_rest_request_json_body_iten: tjsonobject;
-            var li_rest_json_value: tjsonvalue;
             try
-              li_rest_json_value := tjsonobject.parsejsonvalue(tencoding.utf8.getbytes({$ifdef mswindows}
-                                                                       unquoted(vartostr(params.items(lint_count_).value))
-                                                                    {$else}
-                                                                      vartostr(params.items(lint_count_).value)
-                                                                    {$endif})
-                                                              , 0);
-
-
-              if li_rest_json_value is tjsonobject then
-                li_rest_request_json_body_iten := li_rest_json_value as tjsonobject;
-
-              if li_rest_json_value is tjsonarray then
-                li_rest_request_json_body_iten := tjsonobject(li_rest_json_value as tjsonarray);
+              li_rest_request_json_body_iten := tjsonobject.parsejsonvalue(
+                                                              tencoding.ascii.getbytes(
+                                                                                       {$ifdef mswindows}
+                                                                                          unquoted(vartostr(params.items(lint_count_).value))
+                                                                                       {$else}
+                                                                                          vartostr(params.items(lint_count_).value)
+                                                                                       {$endif}
+                                                                                      )
+                                                              , 0) as tjsonobject;
             except
               if li_rest_request_json_body_iten <> nil then
                 freeandnil(li_rest_request_json_body_iten);
@@ -290,6 +279,10 @@ begin
 
           if params.items(lint_count_).name.trim <> '' then
           begin
+            {cria o json body se ainda não estiver criado}
+            if frestRequestJsonBody = nil then
+              frestRequestJsonBody := system.json.tjsonobject.create;
+
             {se a variavel "li_rest_request_json_body_iten" for difernete de nil quer diser que o valor passado
             no parametro era um json string assim deve adicionar o json item direto, se não adiciona o valor}
             if li_rest_request_json_body_iten  <> nil then
@@ -352,9 +345,6 @@ begin
       frestClient.connectTimeOut := fconnectTimeOut;
       frestClient.readTimeOut := freadTimeOut;
 
-      if fusrAgent.trim <> '' then
-        frestClient.userAgent := fusrAgent;
-
       frestResponse := trestresponse.create(frestClient);
       frestResponse.contenttype := fcontenttype;
 
@@ -379,7 +369,7 @@ begin
         if frestResponse.StatusCode = 200 then
           result := frestResponse.Content
         else
-          fobjectResponseError := tjsonObject.parseJSONValue(tencoding.utf8.GetBytes(frestResponse.jsontext), 0) as TJSONObject;
+          fobjectResponseError := tjsonObject.parseJSONValue(TEncoding.ASCII.GetBytes(frestResponse.jsontext), 0) as TJSONObject;
       end;
     except
       on E: Exception do
@@ -415,12 +405,6 @@ end;
 function tkuboRestClient<t>.statusCode: integer;
 begin
   result := fstatusCode;
-end;
-
-function tkuboRestClient<t>.usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
-begin
-  result := self;
-  fusrAgent := pstrUsrAgent;
 end;
 
 function tkuboRestClient<t>.get(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
