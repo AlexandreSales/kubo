@@ -295,7 +295,7 @@ begin
             if li_rest_request_json_body_iten  <> nil then
               frestRequestJsonBody.addpair(params.items(lint_count_).name, li_rest_request_json_body_iten)
             else
-              frestRequestJsonBody.addpair(params.items(lint_count_).name, params.items(lint_count_).value);
+              frestRequestJsonBody.addpair(params.items(lint_count_).name, vartostr(params.items(lint_count_).value));
 
             {cria o body data para adicionar o valor no bory request}
              li_str_strem_body := tstringstream.create(
