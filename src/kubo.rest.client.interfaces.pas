@@ -14,31 +14,32 @@ type
   ikuboJsonArray<t: class> = interface;
   ikuboJsonObject<t: class> = interface;
 
-  ikuboRestClient<t: class> = interface
+  ikubo<t: class> = interface
     ['{D0E551E3-1CEC-4614-A77A-8EAD07A04A8A}']
     function request: ikuboRequest<t>;
-    function contenttype(const pcontenttype: string): ikuboRestClient<t>;
-    function connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
-    function readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
-    function usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
+    function contenttype(const pcontenttype: string): ikubo<t>;
+    function connectTimeOut(const ptimeOut: integer): ikubo<t>;
+    function readTimeOut(const ptimeOut: integer): ikubo<t>;
+    function usrAgent(const pstrUsrAgent: string): ikubo<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
-    function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
+    function responseError(var objectResponseError: tjsonObject): ikubo<t>;
     function statusCode: integer;
 
     function get: string; overload;
-    function get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
-    function get(var objecrResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function get(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
+    function get(var objecrResponse: ikuboJsonObject<t>): ikubo<t>; overload;
+    function get(var jsonValue: tjsonValue): ikubo<t>; overload;
 
-    function post: ikuboRestClient<t>; overload;
-    function post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
-    function post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function post: ikubo<t>; overload;
+    function post(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
+    function post(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
 
-    function put: ikuboRestClient<t>; overload;
-    function put(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function put: ikubo<t>; overload;
+    function put(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
 
     function delete: boolean; overload;
-    function delete(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function delete(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
   end;
 
   ikuboAuthentication<t: class> = interface
@@ -50,7 +51,7 @@ type
      function token: string;
      function login: string;
      function password: string;
-     function &end: ikuboRestClient<t>;
+     function &end: ikubo<t>;
    end;
 
   ikuboRequest<t: class> = interface
@@ -63,7 +64,7 @@ type
     function resource: string; overload;
     function accept: string; overload;
     function charset: string; overload;
-    function &end: ikuboRestClient<t>;
+    function &end: ikubo<t>;
    end;
 
    ikuboParam = interface
@@ -87,7 +88,7 @@ type
    ikuboParams<t: class> = interface
      ['{33FE100B-30BB-45AF-9A7A-5EBDBA3D8BBB}']
      function add(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind): ikuboParams<t>;
-     function &end: ikuboRestClient<t>;
+     function &end: ikubo<t>;
 
      function items(const pindex: integer): ikuboParam;
      function count: integer;
