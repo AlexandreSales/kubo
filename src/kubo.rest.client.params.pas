@@ -44,20 +44,20 @@ type
   private
     {private declarations}
     [weak]
-    fparent: ikuboRestClient<t>;
+    fparent: ikubo<t>;
     flist: TList<ikuboParam>;
   public
     {public declarations}
-    constructor create(pparent: ikuboRestClient<t>);
+    constructor create(pparent: ikubo<t>);
     destructor destroy; override;
 
-    class function new(pparent: ikuboRestClient<t>): ikuboParams<t>;
+    class function new(pparent: ikubo<t>): ikuboParams<t>;
 
     function add(const pname, presource: string; const pvalue: variant; const pkind: tkuboParamKind): ikuboParams<t>;
     function items(const pindex: integer): ikuboParam;
     function count: integer;
 
-    function &end: ikuboRestClient<t>;
+    function &end: ikubo<t>;
   end;
 
 implementation
@@ -82,7 +82,7 @@ begin
   result := flist.count;
 end;
 
-constructor tkuboParams<t>.create(pparent: ikuboRestClient<t>);
+constructor tkuboParams<t>.create(pparent: ikubo<t>);
 begin
   fparent := pparent;
   flist := tlist<ikuboParam>.create;
@@ -96,7 +96,7 @@ begin
   inherited;
 end;
 
-function tkuboParams<t>.&end: ikuboRestClient<t>;
+function tkuboParams<t>.&end: ikubo<t>;
 begin
   result := fparent;
 end;
@@ -107,7 +107,7 @@ begin
     result := flist[pindex];
 end;
 
-class function tkuboParams<t>.new(pparent: ikuboRestClient<t>): ikuboParams<t>;
+class function tkuboParams<t>.new(pparent: ikubo<t>): ikuboParams<t>;
 begin
   result := self.create(pparent);
 end;

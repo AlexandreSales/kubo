@@ -12,7 +12,7 @@ type
   private
     {private declarations}
     [weak]
-    fparent: ikuboRestClient<t>;
+    fparent: ikubo<t>;
 
     ftype: tkuboAuthenticationType;
     flogin: string;
@@ -20,10 +20,10 @@ type
     ftoken: string;
   public
     {public declarations}
-    constructor create(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone);
+    constructor create(pparent: ikubo<t>; pauthentication_type: tkuboAuthenticationType = taNone);
     destructor destroy; override;
 
-    class function new(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
+    class function new(pparent: ikubo<t>; pauthentication_type: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
 
     function types(const ptype: tkuboAuthenticationType): ikuboAuthentication<t>; overload;
     function bearer(const ptoken: string): ikuboAuthentication<t>;
@@ -32,7 +32,7 @@ type
     function token: string;
     function login: string;
     function password: string;
-    function &end: ikuboRestClient<t>;
+    function &end: ikubo<t>;
   end;
 
 implementation
@@ -53,7 +53,7 @@ begin
   ftoken := ptoken;
 end;
 
-constructor tkuboAuthentication<t>.create(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone);
+constructor tkuboAuthentication<t>.create(pparent: ikubo<t>; pauthentication_type: tkuboAuthenticationType = taNone);
 begin
   ftype := pauthentication_type;
   fparent := pparent;
@@ -65,7 +65,7 @@ begin
   inherited;
 end;
 
-function tkuboAuthentication<t>.&end: ikuboRestClient<t>;
+function tkuboAuthentication<t>.&end: ikubo<t>;
 begin
   result := fparent;
 end;
@@ -75,7 +75,7 @@ begin
   result := flogin;
 end;
 
-class function tkuboAuthentication<t>.new(pparent: ikuboRestClient<t>; pauthentication_type: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
+class function tkuboAuthentication<t>.new(pparent: ikubo<t>; pauthentication_type: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
 begin
   result := self.create(pparent, pauthentication_type);
 end;

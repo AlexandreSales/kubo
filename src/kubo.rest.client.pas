@@ -23,7 +23,7 @@ uses
 
 type
 
-  tkuboRestClient<t: class, constructor> = class(tinterfacedobject, ikuboRestClient<t>)
+  tkubo<t: class, constructor> = class(tinterfacedobject, ikubo<t>)
   private
     {private declarations}
     frequest: ikuboRequest<t>;
@@ -51,36 +51,37 @@ type
     constructor create(const puri: string = ''; const presource: string = '');
     destructor destroy; override;
 
-    class function new(const pbase_url: string = ''; const presource: string = ''): ikuboRestClient<t>;
+    class function new(const pbase_url: string = ''; const presource: string = ''): ikubo<t>;
 
     function request: ikuboRequest<t>;
-    function contenttype(const pcontenttype: string): ikuboRestClient<t>;
-    function connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
-    function readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
-    function usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
+    function contenttype(const pcontenttype: string): ikubo<t>;
+    function connectTimeOut(const ptimeOut: integer): ikubo<t>;
+    function readTimeOut(const ptimeOut: integer): ikubo<t>;
+    function usrAgent(const pstrUsrAgent: string): ikubo<t>;
     function authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
     function params: ikuboParams<t>;
-    function responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
+    function responseError(var objectResponseError: tjsonObject): ikubo<t>;
     function statusCode: integer;
 
     function get: string; overload;
-    function get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
-    function get(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function get(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
+    function get(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
+    function get(var jsonValue: tjsonValue): ikubo<t>; overload;
 
-    function post: ikuboRestClient<t>; overload;
-    function post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>; overload;
-    function post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function post: ikubo<t>; overload;
+    function post(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
+    function post(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
 
-    function put: ikuboRestClient<t>; overload;
-    function put(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function put: ikubo<t>; overload;
+    function put(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
 
     function delete: boolean; overload;
-    function delete(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>; overload;
+    function delete(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
   end;
 
 implementation
 
-{ tkuboRestClient<t> }
+{ tkubo<t> }
 
 uses
   kubo.json.objects,
@@ -88,24 +89,24 @@ uses
   kubo.rest.client.authenticatoin,
   kubo.rest.client.params;
 
-function tkuboRestClient<t>.authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
+function tkubo<t>.authentication(ptype: tkuboAuthenticationType = taNone): ikuboAuthentication<t>;
 begin
   result := fauthentication.types(ptype);
 end;
 
-function tkuboRestClient<t>.connectTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+function tkubo<t>.connectTimeOut(const ptimeOut: integer): ikubo<t>;
 begin
   result := self;
   fconnectTimeOut := ptimeOut;
 end;
 
-function tkuboRestClient<t>.contenttype(const pcontenttype: string): ikuboRestClient<t>;
+function tkubo<t>.contenttype(const pcontenttype: string): ikubo<t>;
 begin
   result := self;
   fcontenttype := pcontenttype;
 end;
 
-constructor tkuboRestClient<t>.create(const puri: string = ''; const presource: string = '');
+constructor tkubo<t>.create(const puri: string = ''; const presource: string = '');
 begin
   fusrAgent := 'Kubo RestClient';
   frequest := tkuboRequest<t>.new(self);
@@ -138,13 +139,13 @@ begin
   fstatusCode := 0;
 end;
 
-function tkuboRestClient<t>.delete: boolean;
+function tkubo<t>.delete: boolean;
 begin
   result := true;
   self.dorequest(trestrequestmethod.rmput);
 end;
 
-function tkuboRestClient<t>.delete(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
+function tkubo<t>.delete(var objectResponse: ikuboJsonObject<t>): ikubo<t>;
 var
   lstrResponse: string;
 begin
@@ -160,7 +161,7 @@ begin
   end;
 end;
 
-destructor tkuboRestClient<t>.destroy;
+destructor tkubo<t>.destroy;
 begin
   if frestResponse <> nil then
     freeandnil(frestResponse);
@@ -183,7 +184,7 @@ begin
   inherited;
 end;
 
-function tkuboRestClient<t>.doprepare: boolean;
+function tkubo<t>.doprepare: boolean;
 var
   lint_count_: integer;
   li_str_strem_body: tstringstream;
@@ -335,7 +336,7 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.dorequest(const prest_eequest_method: trestrequestmethod): string;
+function tkubo<t>.dorequest(const prest_eequest_method: trestrequestmethod): string;
 var
   lint_count_: integer;
 begin
@@ -399,7 +400,7 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.responseError(var objectResponseError: tjsonObject): ikuboRestClient<t>;
+function tkubo<t>.responseError(var objectResponseError: tjsonObject): ikubo<t>;
 begin
   result := self;
 
@@ -412,18 +413,18 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.statusCode: integer;
+function tkubo<t>.statusCode: integer;
 begin
   result := fstatusCode;
 end;
 
-function tkuboRestClient<t>.usrAgent(const pstrUsrAgent: string): ikuboRestClient<t>;
+function tkubo<t>.usrAgent(const pstrUsrAgent: string): ikubo<t>;
 begin
   result := self;
   fusrAgent := pstrUsrAgent;
 end;
 
-function tkuboRestClient<t>.get(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
+function tkubo<t>.get(var objectResponse: ikuboJsonObject<t>): ikubo<t>;
 var
   lstr_response: string;
 begin
@@ -441,7 +442,7 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.get(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>;
+function tkubo<t>.get(var arrayResponse: ikuboJsonArray<t>): ikubo<t>;
 var
   lstr_response: string;
 begin
@@ -460,22 +461,22 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.get: string;
+function tkubo<t>.get: string;
 begin
   result := self.dorequest(trestrequestmethod.rmget);
 end;
 
-class function tkuboRestClient<t>.new(const pbase_url: string; const presource: string): ikuboRestClient<t>;
+class function tkubo<t>.new(const pbase_url: string; const presource: string): ikubo<t>;
 begin
   result := self.create(pbase_url, presource);
 end;
 
-function tkuboRestClient<t>.params: ikuboParams<t>;
+function tkubo<t>.params: ikuboParams<t>;
 begin
   result := fparams;
 end;
 
-function tkuboRestClient<t>.post(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
+function tkubo<t>.post(var objectResponse: ikuboJsonObject<t>): ikubo<t>;
 var
   lstrResponse: string;
 begin
@@ -492,7 +493,7 @@ begin
 end;
 
 
-function tkuboRestClient<t>.put(var objectResponse: ikuboJsonObject<t>): ikuboRestClient<t>;
+function tkubo<t>.put(var objectResponse: ikuboJsonObject<t>): ikubo<t>;
 var
   lstrResponse: string;
 begin
@@ -508,7 +509,7 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.post(var arrayResponse: ikuboJsonArray<t>): ikuboRestClient<t>;
+function tkubo<t>.post(var arrayResponse: ikuboJsonArray<t>): ikubo<t>;
 var
   lstrResponse: string;
 begin
@@ -524,27 +525,41 @@ begin
   end;
 end;
 
-function tkuboRestClient<t>.post: ikuboRestClient<t>;
+function tkubo<t>.post: ikubo<t>;
 begin
   result := self;
   self.dorequest(trestrequestmethod.rmpost);
 end;
 
-function tkuboRestClient<t>.put: ikuboRestClient<t>;
+function tkubo<t>.put: ikubo<t>;
 begin
   result := self;
   self.dorequest(trestrequestmethod.rmput);
 end;
 
-function tkuboRestClient<t>.readTimeOut(const ptimeOut: integer): ikuboRestClient<t>;
+function tkubo<t>.readTimeOut(const ptimeOut: integer): ikubo<t>;
 begin
   result := self;
   freadTimeOut := ptimeOut;
 end;
 
-function tkuboRestClient<t>.request: ikuboRequest<t>;
+function tkubo<t>.request: ikuboRequest<t>;
 begin
   result := frequest;
+end;
+
+
+function tkubo<t>.get(var jsonValue: tjsonValue): ikubo<t>;
+var
+  lstr_response: string;
+begin
+  result := self;
+  lstr_response := self.get;
+  if (lstr_response.trim <> '') and (lstr_response.trim <> '{}') then
+  begin
+    if not(pos('error', lstr_response) > 0) then
+      jsonValue := tjsonObject.parseJSONValue(tencoding.utf8.getbytes(lstr_response), 0);
+  end;
 end;
 
 end.

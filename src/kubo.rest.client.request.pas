@@ -12,7 +12,7 @@ type
   private
     {private declarations}
     [weak]
-    fparent: ikuboRestClient<t>;
+    fparent: ikubo<t>;
 
     furi: string;
     fresource: string;
@@ -20,10 +20,10 @@ type
     fcharset: string;
   public
     {private declarations}
-    constructor create(pparent: ikuboRestClient<t>);
+    constructor create(pparent: ikubo<t>);
     destructor destroy; override;
 
-    class function new(pparent: ikuboRestClient<t>): ikuboRequest<t>;
+    class function new(pparent: ikubo<t>): ikuboRequest<t>;
 
     function uri(const puri: string): ikuboRequest<t>; overload;
     function resource(const presource: string): ikuboRequest<t>; overload;
@@ -33,7 +33,7 @@ type
     function resource: string; overload;
     function accept: string; overload;
     function charset: string; overload;
-    function &end: ikuboRestClient<t>;
+    function &end: ikubo<t>;
   end;
 
 implementation
@@ -65,7 +65,7 @@ begin
   result := fcharset;
 end;
 
-constructor tkuboRequest<t>.create(pparent: ikuboRestClient<t>);
+constructor tkuboRequest<t>.create(pparent: ikubo<t>);
 begin
   fparent := pparent;
 end;
@@ -76,12 +76,12 @@ begin
   inherited;
 end;
 
-function tkuboRequest<t>.&end: ikuboRestClient<t>;
+function tkuboRequest<t>.&end: ikubo<t>;
 begin
   result := fparent;
 end;
 
-class function tkuboRequest<t>.new(pparent: ikuboRestClient<t>): ikuboRequest<t>;
+class function tkuboRequest<t>.new(pparent: ikubo<t>): ikuboRequest<t>;
 begin
   result := self.create(pparent);
 end;
