@@ -66,14 +66,19 @@ type
     function get: string; overload;
     function get(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
     function get(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
-    function get(var jsonValue: tjsonValue): ikubo<t>; overload;
+    function get(var jsonObject: tjsonObject): ikubo<t>; overload;
+    function get(var jsonArray: tjsonArray): ikubo<t>; overload;
 
     function post: ikubo<t>; overload;
     function post(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
     function post(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
+    function post(var aResponse: t): ikubo<t>; overload;
+    function post(var jsonObject: tjsonObject): ikubo<t>; overload;
+    function post(var jsonArray: tjsonArray): ikubo<t>; overload;
 
     function put: ikubo<t>; overload;
     function put(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
+    function put(var aResponse: t): ikubo<t>; overload;
 
     function delete: boolean; overload;
     function delete(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
@@ -476,6 +481,68 @@ begin
   result := fparams;
 end;
 
+function tkubo<t>.post(var jsonArray: tjsonArray): ikubo<t>;
+var
+  lstr_response: string;
+begin
+  Result := Self;
+  lstr_response := self.dorequest(trestrequestmethod.rmPOST);
+  if (lstr_response.trim <> '') and (lstr_response.trim <> '[]') then
+  begin
+    if not(pos('error', lstr_response) > 0) then
+    begin
+      if jsonArray <> nil then
+        freeAndNil(jsonArray);
+
+      jsonArray := tjsonObject.parseJSONValue(tencoding.ascii.getBytes(lstr_response), 0) as tjsonArray;
+    end;
+  end;
+end;
+
+function tkubo<t>.post(var jsonObject: tjsonObject): ikubo<t>;
+var
+  lstr_response: string;
+begin
+  result := self;
+  lstr_response := self.dorequest(trestrequestmethod.rmPOST);
+  if (lstr_response.trim <> '') and (lstr_response.trim <> '{}') then
+  begin
+    if not(pos('error', lstr_response) > 0) then
+    begin
+       if jsonObject <> nil then
+        freeAndNil(jsonObject);
+
+      jsonObject := tjsonObject.parseJSONValue(tencoding.ascii.getBytes(lstr_response), 0) as tjsonObject;
+    end;
+  end;
+end;
+
+function tkubo<t>.post(var aResponse: t): ikubo<t>;
+var
+  lstrResponse: string;
+  ljsonResponse: tjsonValue;
+begin
+  result := self;
+  lstrResponse := self.dorequest(trestrequestmethod.rmPOST);
+
+  if (lstrResponse.trim <> '') and (lstrResponse.trim <> '{}') and (lstrResponse.trim <> '[]') then
+  begin
+    if not(pos('error', lstrResponse) > 0) then
+    begin
+      if tjsonObject(aResponse) <> nil then
+        freeAndNil(tjsonObject(aResponse));
+
+      ljsonResponse := tjsonobject.parseJSONValue(tencoding.utf8.getbytes(lstrResponse), 0);
+
+      if ljsonResponse is tjsonObject then
+        tjsonObject(aResponse) := ljsonResponse as tjsonobject;
+
+      if ljsonResponse is tjsonArray then
+        tjsonArray(aResponse) := ljsonResponse as tjsonarray;
+    end;
+  end;
+end;
+
 function tkubo<t>.post(var objectResponse: ikuboJsonObject<t>): ikubo<t>;
 var
   lstrResponse: string;
@@ -492,6 +559,31 @@ begin
   end;
 end;
 
+function tkubo<t>.put(var aResponse: t): ikubo<t>;
+var
+  lstrResponse: string;
+  ljsonResponse: tjsonValue;
+begin
+  result := self;
+  lstrResponse := self.dorequest(trestrequestmethod.rmput);
+
+  if (lstrResponse.trim <> '') and (lstrResponse.trim <> '{}') and (lstrResponse.trim <> '[]') then
+  begin
+    if not(pos('error', lstrResponse) > 0) then
+    begin
+      if tjsonObject(aResponse) <> nil then
+        freeAndNil(tjsonObject(aResponse));
+
+      ljsonResponse := tjsonobject.parseJSONValue(tencoding.utf8.getbytes(lstrResponse), 0);
+
+      if ljsonResponse is tjsonObject then
+        tjsonObject(aResponse) := ljsonResponse as tjsonobject;
+
+      if ljsonResponse is tjsonArray then
+        tjsonArray(aResponse) := ljsonResponse as tjsonarray;
+    end;
+  end;
+end;
 
 function tkubo<t>.put(var objectResponse: ikuboJsonObject<t>): ikubo<t>;
 var
@@ -548,8 +640,26 @@ begin
   result := frequest;
 end;
 
+function tkubo<t>.get(var jsonArray: tjsonArray): ikubo<t>;
+var
+  lstr_response: string;
+begin
+  Result := Self;
 
-function tkubo<t>.get(var jsonValue: tjsonValue): ikubo<t>;
+  lstr_response := Self.get;
+  if (lstr_response.trim <> '') and (lstr_response.trim <> '[]') then
+  begin
+    if not(pos('error', lstr_response) > 0) then
+    begin
+      if jsonArray <> nil then
+        freeAndNil(jsonArray);
+
+      jsonArray := tjsonObject.parseJSONValue(tencoding.ascii.getBytes(lstr_response), 0) as tjsonArray;
+    end;
+  end;
+end;
+
+function tkubo<t>.get(var jsonObject: tjsonObject): ikubo<t>;
 var
   lstr_response: string;
 begin
@@ -558,7 +668,12 @@ begin
   if (lstr_response.trim <> '') and (lstr_response.trim <> '{}') then
   begin
     if not(pos('error', lstr_response) > 0) then
-      jsonValue := tjsonObject.parseJSONValue(tencoding.utf8.getbytes(lstr_response), 0);
+    begin
+       if jsonObject <> nil then
+        freeAndNil(jsonObject);
+
+      jsonObject := tjsonObject.parseJSONValue(tencoding.ascii.getBytes(lstr_response), 0) as tjsonObject;
+    end;
   end;
 end;
 
