@@ -29,14 +29,19 @@ type
     function get: string; overload;
     function get(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
     function get(var objecrResponse: ikuboJsonObject<t>): ikubo<t>; overload;
-    function get(var jsonValue: tjsonValue): ikubo<t>; overload;
+    function get(var jsonObject: tjsonObject): ikubo<t>; overload;
+    function get(var jsonArray: tjsonArray): ikubo<t>; overload;
 
     function post: ikubo<t>; overload;
     function post(var arrayResponse: ikuboJsonArray<t>): ikubo<t>; overload;
     function post(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
+    function post(var aResponse: t): ikubo<t>; overload;
+    function post(var jsonObject: tjsonObject): ikubo<t>; overload;
+    function post(var jsonArray: tjsonArray): ikubo<t>; overload;
 
     function put: ikubo<t>; overload;
     function put(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
+    function put(var aResponse: t): ikubo<t>; overload;
 
     function delete: boolean; overload;
     function delete(var objectResponse: ikuboJsonObject<t>): ikubo<t>; overload;
